@@ -507,6 +507,132 @@ All technical decisions have been made:
 
 ---
 
+## 8. Session Protocol (v1.1.0)
+
+### 8.1 Overview
+
+The Semi-Auto Session Protocol enables natural language interaction with Cortex, eliminating the need for users to know or invoke scripts directly.
+
+**Design Principles:**
+1. **Zero pre-loaded content** - Only metadata at session start
+2. **Retrieval-based context** - Content enters through semantic search only
+3. **Natural language triggers** - Users speak naturally, agent handles mechanics
+4. **Human control preserved** - User triggers session end and approves learnings
+
+### 8.2 Protocol Phases
+
+#### Phase 1: Session Start (Automatic)
+
+**Trigger:** Agent awakens / conversation begins
+
+**Action:** Run `cortex-status.ps1`
+
+**Result:** Metadata only (~50 tokens)
+- Chunk count and domains
+- Memory count
+- Index status
+
+**User Experience:** Agent greets and reports Cortex is available. No content loaded.
+
+#### Phase 2: Task Identification (Automatic)
+
+**Trigger:** User specifies a task
+
+**Detection Patterns:**
+```
+(?:let's|let us|we need to|i need to|help me|going to|want to|
+  working on|work on|implement|build|create|fix|debug|update|modify)\s+(.+)
+```
+
+**Action:** Run `cortex-assemble.ps1 -Task "{detected task}"`
+
+**Result:** Context frame (~2,500 tokens)
+- Relevant chunks
+- Relevant memories
+- Position-optimized
+
+#### Phase 3: On-Demand Retrieval (Natural Language)
+
+**Trigger:** User asks for information
+
+**Detection Patterns:**
+
+| Pattern | Type |
+|---------|------|
+| "Get more details about {X}" | Retrieval |
+| "What do we know about {X}" | Retrieval |
+| "I need context on {X}" | Retrieval |
+| "Tell me about {X}" | Retrieval |
+| "Remind me how {X} works" | Retrieval |
+| "What did we learn about {X}" | Retrieval |
+| "cortex: {X}" | Explicit retrieval |
+
+**Action:** Run `cortex-retrieve.ps1 -Query "{X}"`
+
+**Result:** Top relevant chunks (~1,500 tokens)
+
+#### Phase 4: Session End (User-Triggered)
+
+**Trigger:** User requests learning extraction
+
+**Detection Patterns:**
+```
+(?:update|save|extract|capture)\s+(?:the\s+)?learn(?:ing|ings)
+(?:end|wrap up|close|finish)\s+(?:the\s+)?session
+```
+
+**Action:**
+1. Identify key learnings from session
+2. Run `cortex-extract.ps1 -Text "{learnings}"`
+3. Present proposed memories
+4. User approves selections
+5. Run `cortex-index.ps1` if memories saved
+
+### 8.3 Natural Language Trigger Reference
+
+#### Task Identification Triggers
+
+| Phrase | Example |
+|--------|---------|
+| "Let's work on {X}" | "Let's work on the login page" |
+| "I need to {X}" | "I need to fix the API endpoint" |
+| "Help me with {X}" | "Help me with database migrations" |
+| "Working on {X}" | "Working on user authentication" |
+| "Want to {X}" | "Want to refactor the validation" |
+
+#### Retrieval Triggers
+
+| Phrase | Example |
+|--------|---------|
+| "Get more details about {X}" | "Get more details about caching" |
+| "What do we know about {X}" | "What do we know about rate limiting" |
+| "I need context on {X}" | "I need context on the auth flow" |
+| "Tell me about {X}" | "Tell me about error handling" |
+| "Remind me how {X} works" | "Remind me how sessions work" |
+| "cortex: {X}" | "cortex: JWT validation" |
+
+#### Session End Triggers
+
+| Phrase | Example |
+|--------|---------|
+| "Update learning" | "Update learning" |
+| "Save learnings" | "Save learnings from today" |
+| "End session" | "Let's end session" |
+| "Wrap up and save" | "Wrap up and save what we learned" |
+
+### 8.4 Context Budget
+
+| Phase | Tokens | % of 200k |
+|-------|--------|-----------|
+| Session start | ~50 | 0.025% |
+| Task assembly | ~2,500 | 1.25% |
+| Retrieval (×2) | ~3,000 | 1.5% |
+| **Typical total** | **~5,550** | **~2.8%** |
+
+Leaves **97%+ context** for actual work.
+
+---
+
 ## Appendix A: File Structure
 
 ```

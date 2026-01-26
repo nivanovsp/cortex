@@ -1,5 +1,7 @@
 # Cortex Installation Guide
 
+**Version:** 1.1.0
+
 ## Prerequisites
 
 - Python 3.8+
@@ -35,7 +37,7 @@ This will:
 
 ### Step 3: Configure Claude Code (Recommended)
 
-For full Claude Code integration, add Cortex rules to your global CLAUDE.md:
+For full Claude Code integration with natural language support (v1.1.0), add Cortex rules to your global CLAUDE.md:
 
 1. **Open your global CLAUDE.md:**
    ```powershell
@@ -43,11 +45,15 @@ For full Claude Code integration, add Cortex rules to your global CLAUDE.md:
    # Or: code $HOME\.claude\CLAUDE.md
    ```
 
-2. **Copy the contents of `global/CLAUDE.md`** and paste at the end of your global file.
+2. **Find the "Cortex Context Management" section** in your global file and replace it with the updated version from the project's documentation (see `docs/cortex-spec.md` Section 8).
 
 3. **Save and close.**
 
-This enables Claude Code to understand Cortex commands and workflows across all your projects.
+This enables:
+- Natural language interaction ("Let's work on X", "What do we know about Y")
+- Automatic context loading when you specify a task
+- Seamless retrieval without running scripts
+- User-triggered learning extraction ("Update learning")
 
 ### Step 4: Verify Installation
 

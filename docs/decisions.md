@@ -280,3 +280,107 @@ Implement **configurable token budgets** with proportional allocation.
 - Predictable context consumption (~8%)
 - May truncate content to fit budget
 - Configurable for different needs
+
+---
+
+## ADR-010: Semi-Auto Session Protocol
+
+**Date:** 2026-01-26
+**Status:** Accepted
+**Version:** 1.1.0
+
+### Context
+
+In v1.0.0, users must manually invoke PowerShell scripts at specific points in their workflow:
+- `cortex-status.ps1` at session start
+- `cortex-assemble.ps1` when starting a task
+- `cortex-retrieve.ps1` for additional context
+- `cortex-extract.ps1` at session end
+
+This creates friction and technical barriers for non-technical users, leading to underutilization of Cortex capabilities.
+
+### Decision
+
+Implement a **Semi-Auto Session Protocol** where:
+1. Agent automatically invokes scripts based on detected user intent
+2. Users interact through natural language, not script commands
+3. Session end remains user-triggered to maintain human control
+
+### Protocol Design
+
+| Phase | Trigger | Agent Action | User Experience |
+|-------|---------|--------------|-----------------|
+| Start | Agent awakens | `cortex-status` | Transparent |
+| Task | "Let's work on X" | `cortex-assemble -Task "X"` | Seamless context |
+| Retrieval | "What do we know about X" | `cortex-retrieve -Query "X"` | Natural Q&A |
+| End | "Update learning" | `cortex-extract` | Explicit control |
+
+### Natural Language Patterns
+
+**Task Detection:**
+- "Let's work on {X}"
+- "Help me with {X}"
+- "I need to implement {X}"
+
+**Retrieval Detection:**
+- "What do we know about {X}"
+- "Get more details about {X}"
+- "Tell me about {X}"
+- "cortex: {X}" (explicit)
+
+**Session End Detection:**
+- "Update learning"
+- "Save learnings"
+- "End session"
+
+### Rationale
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| Manual (v1.0.0) | Full control | Technical barrier, friction |
+| Full-Auto | Zero friction | Loss of control, potential noise |
+| **Semi-Auto (v1.1.0)** | Natural UX, human control preserved | Requires intent detection |
+
+Semi-auto provides the best balance:
+- Non-technical users can work naturally
+- Power users can use explicit "cortex:" prefix
+- Learning extraction remains user-controlled
+
+### Context Budget Analysis
+
+| Metric | Previous (Neocortex) | v1.0.0 Manual | v1.1.0 Semi-Auto |
+|--------|---------------------|---------------|------------------|
+| Start context | ~35% | 0% (user forgot) | ~0.025% |
+| Task context | +more | 0% (user forgot) | ~1.25% |
+| Total before work | 35%+ | 0% (no context!) | **~1.3%** |
+
+The semi-auto approach ensures context is always available when needed, while staying minimal.
+
+### Implementation
+
+**No code changes required.** The protocol is implemented through agent instructions in:
+- Project `CLAUDE.md`
+- Global `~/.claude/CLAUDE.md`
+
+Agents learn *when* to invoke existing scripts through documented patterns.
+
+### Consequences
+
+**Positive:**
+- Accessible to non-technical users
+- Consistent context availability
+- Maintains retrieval-based efficiency
+
+**Negative:**
+- Requires pattern matching for intent detection
+- May occasionally misinterpret user intent
+- Explicit "cortex:" escape hatch needed for edge cases
+
+### Testing Criteria
+
+- [ ] Session start loads only metadata (~50 tokens)
+- [ ] Task phrases trigger assembly automatically
+- [ ] At least 6 retrieval patterns work
+- [ ] "cortex:" explicit trigger works
+- [ ] "Update learning" triggers extraction
+- [ ] Total context < 5% for typical session

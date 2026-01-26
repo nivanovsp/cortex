@@ -4,9 +4,12 @@
 
 Cortex is a methodology for managing documentation and context in LLM-powered development workflows. It's designed around how LLMs actually process information, not human cognitive metaphors.
 
+**Version:** 1.1.0
+
 ## Key Features
 
-- **~8% context consumption** vs 35-60% with traditional approaches
+- **Natural language interaction** - Just talk, agent handles scripts automatically **(New in v1.1.0)**
+- **~2.8% context consumption** - Efficient retrieval-based context loading
 - **Position-aware assembly** - Critical info where LLMs pay attention
 - **Semantic retrieval** - Find relevant content via similarity, not manual links
 - **Memory system** - Capture and reuse learnings across sessions
@@ -93,7 +96,32 @@ cd your-project
 
 ## Claude Code Integration
 
-### Session Workflow
+### Natural Language Workflow (v1.1.0)
+
+**No scripts required!** Just talk naturally:
+
+| You Say | What Happens |
+|---------|--------------|
+| "Let's work on user authentication" | Agent builds context automatically |
+| "What do we know about tokens?" | Agent retrieves relevant info |
+| "Update learning" | Agent extracts and saves memories |
+
+### Example Session
+
+```
+You: "Let's work on the password reset feature"
+     → Agent automatically loads relevant context
+
+You: "What do we know about email templates?"
+     → Agent retrieves email-related chunks
+
+You: "Update learning"
+     → Agent proposes memories to save from session
+```
+
+### Manual Workflow (Advanced)
+
+For power users who prefer direct script control:
 
 1. **Session Start**: Check status and build context
    ```powershell
@@ -108,9 +136,7 @@ cd your-project
 
 3. **Session End**: Extract and save learnings
    ```powershell
-   .\scripts\cortex-extract.ps1 -Text "Session notes or paste conversation"
-   # Or auto-save high confidence memories:
-   .\scripts\cortex-extract.ps1 -Text "..." -AutoSave
+   .\scripts\cortex-extract.ps1 -Text "Session notes"
    ```
 
 ### Memory Types
@@ -205,8 +231,12 @@ Dependencies installed automatically:
 
 ## Documentation
 
+- [User Guide](docs/user-guide.md) - Getting started and usage
 - [Full Specification](docs/cortex-spec.md) - Complete technical details
+- [Architecture](docs/architecture.md) - System design
+- [Decisions](docs/decisions.md) - Architecture decision records
+- [Changelog](CHANGELOG.md) - Version history
 
 ---
 
-*Cortex v1.0.0 - LLM-Native Context Management*
+*Cortex v1.1.0 - LLM-Native Context Management*

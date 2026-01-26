@@ -5,6 +5,42 @@ All notable changes to Cortex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-26
+
+### Added
+
+- **Semi-Auto Session Protocol** - Natural language interaction with Cortex
+  - Automatic context assembly when task is identified
+  - Natural language retrieval triggers ("What do we know about X?")
+  - User-triggered learning extraction ("Update learning")
+  - Explicit retrieval via "cortex: {query}" pattern
+
+- **Session Protocol Documentation**
+  - New `docs/session-protocol-v1.1.0.md` design document
+  - Updated `docs/architecture.md` with session flow diagram
+  - Updated `docs/cortex-spec.md` Section 8: Session Protocol
+  - ADR-010: Semi-Auto Session Protocol decision record
+
+- **Natural Language Triggers**
+  - Task detection: "Let's work on...", "Help me with...", etc.
+  - Retrieval detection: "What do we know about...", "Tell me about...", etc.
+  - Session end detection: "Update learning", "Save learnings", etc.
+
+### Changed
+
+- **Context Budget** - Reduced from ~8% to ~2.8% typical session consumption
+- **User Guide** - Rewritten for natural language-first usage
+- **README** - Updated with natural language workflow examples
+- **CLAUDE.md** (project) - Added session protocol instructions
+- **Global CLAUDE.md** - Updated Cortex section with protocol
+
+### Fixed
+
+- Clarified that scripts are internal implementation details
+- Users interact through natural language, not script commands
+
+---
+
 ## [1.0.0] - 2026-01-26
 
 ### Added
@@ -65,3 +101,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chunk versioning for document changes
 - Watch mode for auto-chunking
 - Export/import for sharing between projects
+- Document impact analysis for session-end updates
+- Windows encoding fix for cortex-assemble output

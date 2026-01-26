@@ -2,15 +2,18 @@
 
 A comprehensive guide to using Cortex for LLM-native context management.
 
+**Version:** 1.1.0
+
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
-2. [Document Management](#document-management)
-3. [Memory System](#memory-system)
-4. [Context Assembly](#context-assembly)
-5. [Session Workflow](#session-workflow)
-6. [Best Practices](#best-practices)
-7. [Troubleshooting](#troubleshooting)
+2. [Natural Language Usage](#natural-language-usage) **(New in v1.1.0)**
+3. [Document Management](#document-management)
+4. [Memory System](#memory-system)
+5. [Context Assembly](#context-assembly)
+6. [Session Workflow](#session-workflow)
+7. [Best Practices](#best-practices)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -40,6 +43,83 @@ A comprehensive guide to using Cortex for LLM-native context management.
    ```
 
 ### First Steps
+
+---
+
+## Natural Language Usage (v1.1.0)
+
+**New in Cortex v1.1.0:** You no longer need to know or run scripts directly. Just talk naturally to the agent, and it handles Cortex automatically.
+
+### How It Works
+
+| What You Say | What Happens |
+|--------------|--------------|
+| "Let's work on authentication" | Agent automatically retrieves relevant context |
+| "What do we know about tokens?" | Agent searches for token-related knowledge |
+| "Update learning" | Agent extracts and proposes memories to save |
+
+### Session Flow (Natural Language)
+
+**1. Start a Session**
+
+Just start talking. The agent automatically checks Cortex status.
+
+**2. Specify Your Task**
+
+Say things like:
+- "Let's work on the login page"
+- "I need to implement password reset"
+- "Help me with the API endpoints"
+- "Working on user authentication"
+
+The agent automatically builds a context frame with relevant chunks and memories.
+
+**3. Ask for More Context**
+
+If you need more information during work:
+- "What do we know about session tokens?"
+- "Get more details about the auth flow"
+- "Tell me about error handling"
+- "Remind me how the API works"
+
+Or use the explicit trigger: `cortex: JWT validation`
+
+**4. End the Session**
+
+When you're done, say:
+- "Update learning"
+- "Save learnings"
+- "Wrap up and save"
+
+The agent will:
+1. Identify learnings from the session
+2. Propose memories with confidence levels
+3. Ask which to save
+4. Rebuild the index
+
+### Natural Language Trigger Reference
+
+| Phrase Pattern | What It Does |
+|----------------|--------------|
+| "Let's work on {X}" | Builds context frame for task X |
+| "Help me with {X}" | Builds context frame for task X |
+| "What do we know about {X}" | Retrieves information about X |
+| "Tell me about {X}" | Retrieves information about X |
+| "Get details on {X}" | Retrieves information about X |
+| "cortex: {X}" | Explicit retrieval for X |
+| "Update learning" | Extracts session learnings |
+| "Save learnings" | Extracts session learnings |
+
+### When to Use Scripts Directly
+
+Most users won't need to run scripts. However, you can still use them for:
+- Initial setup (`cortex-init.ps1`)
+- Bulk document chunking (`cortex-chunk.ps1`)
+- Debugging (`cortex-status.ps1 -Json`)
+
+---
+
+### First Steps (Manual)
 
 1. **Chunk your documentation**
    ```powershell
@@ -236,7 +316,29 @@ BOTTOM (high attention)
 
 ## Session Workflow
 
-### Recommended Flow
+### Natural Language Flow (Recommended - v1.1.0)
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  SESSION START                       │
+├─────────────────────────────────────────────────────┤
+│  Just start talking - agent checks Cortex status    │
+│  "Let's work on {your task}"                        │
+│  → Agent automatically builds context frame         │
+├─────────────────────────────────────────────────────┤
+│                  DURING SESSION                      │
+├─────────────────────────────────────────────────────┤
+│  "What do we know about {topic}?"                   │
+│  → Agent automatically retrieves relevant info      │
+├─────────────────────────────────────────────────────┤
+│                  SESSION END                         │
+├─────────────────────────────────────────────────────┤
+│  "Update learning"                                   │
+│  → Agent extracts, proposes, and saves memories     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Manual Script Flow (Advanced)
 
 ```
 ┌─────────────────────────────────────────────────────┐
