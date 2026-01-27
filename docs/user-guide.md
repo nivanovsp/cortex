@@ -2,18 +2,19 @@
 
 A comprehensive guide to using Cortex for LLM-native context management.
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
-2. [Natural Language Usage](#natural-language-usage) **(New in v1.1.0)**
+2. [Natural Language Usage](#natural-language-usage)
 3. [Document Management](#document-management)
-4. [Memory System](#memory-system)
-5. [Context Assembly](#context-assembly)
-6. [Session Workflow](#session-workflow)
-7. [Best Practices](#best-practices)
-8. [Troubleshooting](#troubleshooting)
+4. [Stale Chunk Detection](#stale-chunk-detection) **(New in v1.2.0)**
+5. [Memory System](#memory-system)
+6. [Context Assembly](#context-assembly)
+7. [Session Workflow](#session-workflow)
+8. [Best Practices](#best-practices)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -23,32 +24,35 @@ A comprehensive guide to using Cortex for LLM-native context management.
 
 1. **Prerequisites**
    - Python 3.8+
-   - PowerShell 5.1+ (Windows) or PowerShell Core
    - ~200MB disk space for embedding model
 
-2. **Initialize Cortex**
-   ```powershell
+2. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Initialize Cortex**
+   ```bash
    cd your-project
-   .\path\to\cortex\scripts\cortex-init.ps1
+   python -m cli init
    ```
 
    This creates:
    - `.cortex/` directory structure
-   - Installs Python dependencies
    - Downloads embedding model (~130MB, first run only)
 
-3. **Verify Installation**
-   ```powershell
-   .\scripts\cortex-status.ps1
+4. **Verify Installation**
+   ```bash
+   python -m cli status
    ```
 
 ### First Steps
 
 ---
 
-## Natural Language Usage (v1.1.0)
+## Natural Language Usage
 
-**New in Cortex v1.1.0:** You no longer need to know or run scripts directly. Just talk naturally to the agent, and it handles Cortex automatically.
+You don't need to run CLI commands directly. Just talk naturally to the agent, and it handles Cortex automatically.
 
 ### How It Works
 
@@ -110,30 +114,31 @@ The agent will:
 | "Update learning" | Extracts session learnings |
 | "Save learnings" | Extracts session learnings |
 
-### When to Use Scripts Directly
+### When to Use CLI Directly
 
-Most users won't need to run scripts. However, you can still use them for:
-- Initial setup (`cortex-init.ps1`)
-- Bulk document chunking (`cortex-chunk.ps1`)
-- Debugging (`cortex-status.ps1 -Json`)
+Most users won't need to run commands. However, you can use them for:
+- Initial setup (`python -m cli init`)
+- Bulk document chunking (`python -m cli chunk --path docs/`)
+- Refreshing stale chunks (`python -m cli chunk --path file.md --refresh`)
+- Debugging (`python -m cli status --json`)
 
 ---
 
 ### First Steps (Manual)
 
 1. **Chunk your documentation**
-   ```powershell
-   .\scripts\cortex-chunk.ps1 -Path "docs/"
+   ```bash
+   python -m cli chunk --path docs/
    ```
 
 2. **Build the search index**
-   ```powershell
-   .\scripts\cortex-index.ps1
+   ```bash
+   python -m cli index
    ```
 
 3. **Test retrieval**
-   ```powershell
-   .\scripts\cortex-retrieve.ps1 -Query "authentication"
+   ```bash
+   python -m cli retrieve --query "authentication"
    ```
 
 ---
@@ -145,23 +150,23 @@ Most users won't need to run scripts. However, you can still use them for:
 Cortex breaks documents into ~500 token semantic units for efficient retrieval.
 
 **Chunk a single file:**
-```powershell
-.\scripts\cortex-chunk.ps1 -Path "docs/api-spec.md"
+```bash
+python -m cli chunk --path docs/api-spec.md
 ```
 
 **Chunk a directory:**
-```powershell
-.\scripts\cortex-chunk.ps1 -Path "docs/"
+```bash
+python -m cli chunk --path docs/
 ```
 
 **Override domain detection:**
-```powershell
-.\scripts\cortex-chunk.ps1 -Path "docs/auth.md" -Domain "AUTH"
+```bash
+python -m cli chunk --path docs/auth.md --domain AUTH
 ```
 
-**Force re-chunk:**
-```powershell
-.\scripts\cortex-chunk.ps1 -Path "docs/" -Force
+**Refresh chunks (delete old, create new):**
+```bash
+python -m cli chunk --path docs/api-spec.md --refresh
 ```
 
 ### Domain Detection
@@ -177,9 +182,59 @@ Cortex auto-detects domains from file paths:
 ### After Chunking
 
 Always rebuild the index after adding chunks:
-```powershell
-.\scripts\cortex-index.ps1
+```bash
+python -m cli index
 ```
+
+---
+
+## Stale Chunk Detection
+
+**(New in v1.2.0)** Cortex tracks source file changes and alerts you when chunks are stale.
+
+### How It Works
+
+Each chunk stores:
+- `source_path` - The original file path
+- `source_hash` - SHA256 hash of file content at chunk time
+
+When you run `status`, Cortex compares stored hashes with current files.
+
+### Checking for Stale Chunks
+
+```bash
+python -m cli status
+```
+
+Output shows stale chunks if any exist:
+```
+Cortex Status
+=============
+Status: INITIALIZED
+
+Chunks: 15 total
+  - CORTEX: 15
+
+Stale Chunks:
+  - docs/architecture.md (5 chunks, modified)
+
+  Refresh with: python -m cli chunk --path <source> --refresh
+```
+
+### Refreshing Stale Chunks
+
+```bash
+# Refresh a single file
+python -m cli chunk --path docs/architecture.md --refresh
+
+# Rebuild index after refresh
+python -m cli index
+```
+
+The `--refresh` flag:
+1. Finds all chunks from the source file
+2. Deletes them
+3. Creates new chunks from current file content
 
 ---
 
@@ -198,60 +253,41 @@ Memories are atomic learnings that persist across sessions.
 ### Creating Memories
 
 **Basic:**
-```powershell
-.\scripts\cortex-memory.ps1 -Action add -Learning "API requires auth header"
+```bash
+python -m cli memory add --learning "API requires auth header"
 ```
 
 **With all options:**
-```powershell
-.\scripts\cortex-memory.ps1 -Action add `
-    -Learning "FormField wrapper is required for PasswordInput" `
-    -Context "Discovered when component threw runtime error" `
-    -Type experiential `
-    -Domain UI `
-    -Confidence high
+```bash
+python -m cli memory add \
+    --learning "FormField wrapper is required for PasswordInput" \
+    --context "Discovered when component threw runtime error" \
+    --type experiential \
+    --domain UI \
+    --confidence high
 ```
 
 ### Listing Memories
 
 **All memories:**
-```powershell
-.\scripts\cortex-memory.ps1 -Action list
+```bash
+python -m cli memory list
 ```
 
 **Filter by domain:**
-```powershell
-.\scripts\cortex-memory.ps1 -Action list -Domain AUTH
+```bash
+python -m cli memory list --domain AUTH
 ```
 
-### Searching Memories
-
-```powershell
-.\scripts\cortex-memory.ps1 -Action query -Query "form validation"
-```
-
-### Updating Memories
-
-**Mark as verified:**
-```powershell
-.\scripts\cortex-memory.ps1 -Action update -Id "MEM-2026-01-26-001" -Verified
-```
-
-**Change confidence:**
-```powershell
-.\scripts\cortex-memory.ps1 -Action update -Id "MEM-2026-01-26-001" -Confidence high
-```
-
-### Finding Related Memories
-
-```powershell
-.\scripts\cortex-memory.ps1 -Action related -Id "MEM-2026-01-26-001" -TopK 5
+**JSON output:**
+```bash
+python -m cli memory list --json
 ```
 
 ### Deleting Memories
 
-```powershell
-.\scripts\cortex-memory.ps1 -Action delete -Id "MEM-2026-01-26-001"
+```bash
+python -m cli memory delete MEM-2026-01-26-001
 ```
 
 ---
@@ -262,36 +298,20 @@ Context frames combine relevant chunks and memories for LLM consumption.
 
 ### Basic Assembly
 
-```powershell
-.\scripts\cortex-assemble.ps1 -Task "Implement user authentication"
-```
-
-### With Acceptance Criteria
-
-```powershell
-.\scripts\cortex-assemble.ps1 `
-    -Task "Fix login bug" `
-    -Criteria "Users can log in,Sessions persist,Error messages shown"
-```
-
-### With Current State
-
-```powershell
-.\scripts\cortex-assemble.ps1 `
-    -Task "Add OAuth support" `
-    -State "Basic auth working, need OAuth"
+```bash
+python -m cli assemble --task "Implement user authentication"
 ```
 
 ### Custom Budget
 
-```powershell
-.\scripts\cortex-assemble.ps1 -Task "Quick fix" -Budget 5000
+```bash
+python -m cli assemble --task "Quick fix" --budget 5000
 ```
 
 ### Save to File
 
-```powershell
-.\scripts\cortex-assemble.ps1 -Task "Implement feature" -Output "context.md"
+```bash
+python -m cli assemble --task "Implement feature" --output context.md
 ```
 
 ### Context Frame Structure
@@ -338,47 +358,37 @@ BOTTOM (high attention)
 └─────────────────────────────────────────────────────┘
 ```
 
-### Manual Script Flow (Advanced)
+### Manual CLI Flow (Advanced)
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │                  SESSION START                       │
 ├─────────────────────────────────────────────────────┤
-│  1. cortex-status.ps1        # Check state          │
-│  2. cortex-assemble.ps1      # Build context        │
+│  1. python -m cli status     # Check state          │
+│  2. python -m cli assemble   # Build context        │
 ├─────────────────────────────────────────────────────┤
 │                  DURING SESSION                      │
 ├─────────────────────────────────────────────────────┤
-│  • cortex-retrieve.ps1       # Search as needed     │
-│  • cortex-memory.ps1 add     # Note learnings       │
+│  • python -m cli retrieve    # Search as needed     │
+│  • python -m cli memory add  # Note learnings       │
 ├─────────────────────────────────────────────────────┤
 │                  SESSION END                         │
 ├─────────────────────────────────────────────────────┤
-│  1. cortex-extract.ps1       # Extract learnings    │
-│  2. cortex-index.ps1         # Rebuild if added     │
+│  1. python -m cli extract    # Extract learnings    │
+│  2. python -m cli index      # Rebuild if added     │
 └─────────────────────────────────────────────────────┘
 ```
 
 ### Extracting Learnings
 
 **From text:**
-```powershell
-.\scripts\cortex-extract.ps1 -Text "Fixed by adding null check. Found that X requires Y."
+```bash
+python -m cli extract --text "Fixed by adding null check. Found that X requires Y."
 ```
 
-**From file:**
-```powershell
-.\scripts\cortex-extract.ps1 -File "session-notes.txt"
-```
-
-**Auto-save high confidence:**
-```powershell
-.\scripts\cortex-extract.ps1 -Text "..." -AutoSave
-```
-
-**Filter by confidence:**
-```powershell
-.\scripts\cortex-extract.ps1 -Text "..." -MinConfidence high
+**Auto-save all extracted:**
+```bash
+python -m cli extract --text "..." --auto-save
 ```
 
 ---
@@ -411,6 +421,7 @@ BOTTOM (high attention)
 1. **Rebuild index after bulk changes** - Not after every single addition
 2. **Use domain filters** - Narrow searches when possible
 3. **Keep chunks reasonable** - Don't chunk massive files unnecessarily
+4. **Refresh stale chunks** - Use `--refresh` flag when source files change
 
 ---
 
@@ -419,23 +430,32 @@ BOTTOM (high attention)
 ### Common Issues
 
 **"No chunks found"**
-- Did you run `cortex-chunk.ps1`?
-- Did you run `cortex-index.ps1` after chunking?
+- Did you run `python -m cli chunk --path docs/`?
+- Did you run `python -m cli index` after chunking?
 
 **"Index not found"**
-```powershell
-.\scripts\cortex-index.ps1
+```bash
+python -m cli index
+```
+
+**"Stale chunks detected"**
+```bash
+# View stale chunks
+python -m cli status
+
+# Refresh specific file
+python -m cli chunk --path docs/file.md --refresh
+python -m cli index
 ```
 
 **Retrieval returns irrelevant results**
 - Try more specific queries
 - Check that relevant documents are chunked
-- Rebuild index: `.\scripts\cortex-index.ps1 -Full`
+- Rebuild index: `python -m cli index`
 
 **Memory extraction finds nothing**
 - Text may not match extraction patterns
-- Try lowering confidence: `-MinConfidence low`
-- Add memories manually if patterns don't match
+- Add memories manually: `python -m cli memory add --learning "..."`
 
 **Slow embedding**
 - First run downloads model (~130MB)
@@ -444,24 +464,24 @@ BOTTOM (high attention)
 
 ### Checking System State
 
-```powershell
+```bash
 # Full status
-.\scripts\cortex-status.ps1
+python -m cli status
 
 # JSON output for debugging
-.\scripts\cortex-status.ps1 -Json
+python -m cli status --json
 ```
 
 ### Rebuilding Everything
 
 If something is corrupted:
 
-```powershell
+```bash
 # Remove indices (keeps chunks and memories)
-Remove-Item .cortex\index\* -Force
+rm -rf .cortex/index/*
 
 # Rebuild
-.\scripts\cortex-index.ps1
+python -m cli index
 ```
 
 ### Getting Help

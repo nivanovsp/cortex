@@ -41,6 +41,15 @@ param(
     [string]$Session
 )
 
+# DEPRECATION WARNING
+Write-Host ""
+Write-Host "WARNING: This PowerShell script is DEPRECATED." -ForegroundColor Yellow
+Write-Host "Use the cross-platform Python CLI instead:" -ForegroundColor Yellow
+Write-Host "  python -m cli extract --text `"...`"" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "See scripts/README.md for migration guide." -ForegroundColor Gray
+Write-Host ""
+
 $ErrorActionPreference = "Stop"
 
 Write-Host "Cortex Memory Extraction" -ForegroundColor Cyan

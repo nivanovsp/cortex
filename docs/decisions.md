@@ -384,3 +384,210 @@ Agents learn *when* to invoke existing scripts through documented patterns.
 - [ ] "cortex:" explicit trigger works
 - [ ] "Update learning" triggers extraction
 - [ ] Total context < 5% for typical session
+
+---
+
+## ADR-011: Cross-Platform Python CLI
+
+**Date:** 2026-01-27
+**Status:** Accepted
+**Version:** 1.2.0
+
+### Context
+
+The v1.0.0/v1.1.0 CLI used PowerShell scripts calling Python modules. While this worked well on Windows, it created barriers for Mac/Linux users and added complexity.
+
+### Decision
+
+Replace PowerShell CLI with a **pure Python CLI** using Typer.
+
+### Rationale
+
+| Factor | PowerShell + Python | Pure Python (Typer) |
+|--------|---------------------|---------------------|
+| Cross-platform | Windows-centric | Full support |
+| Dependencies | PowerShell Core needed | Python only |
+| Maintenance | Two languages | Single codebase |
+| UX | Good | Equally good (Rich) |
+
+### Implementation
+
+```
+cli/
+├── __init__.py
+├── __main__.py      # python -m cli entry point
+├── main.py          # Typer app
+└── commands/        # Command modules
+```
+
+### Consequences
+
+**Positive:**
+- Works on Windows, Mac, Linux without changes
+- Simpler codebase (one language)
+- Easier to maintain and extend
+
+**Negative:**
+- PowerShell scripts deprecated (migration guide provided)
+- Existing users need to update workflows
+
+---
+
+## ADR-012: Chunk Provenance Tracking
+
+**Date:** 2026-01-27
+**Status:** Accepted
+**Version:** 1.2.0
+
+### Context
+
+After chunking, there's no link back to source files. When documentation changes, chunks become stale with no way to detect or refresh them.
+
+### Decision
+
+Add **provenance fields** to chunk metadata:
+- `source_path` - Relative path to source file
+- `source_hash` - SHA256 hash of source content at chunk time
+
+### Implementation
+
+```yaml
+# In chunk frontmatter
+source_path: "docs/architecture.md"
+source_hash: "a1b2c3d4e5f6..."
+```
+
+**Stale Detection:**
+```bash
+python -m cli status  # Shows stale chunks
+```
+
+**Refresh Workflow:**
+```bash
+python -m cli chunk --path docs/file.md --refresh
+python -m cli index
+```
+
+### Consequences
+
+**Positive:**
+- Know exactly where each chunk came from
+- Detect when source files change
+- Simple refresh workflow
+
+**Negative:**
+- Slightly larger chunk metadata
+- Requires index rebuild after refresh
+
+---
+
+## ADR-013: Memory Retrieval Tracking
+
+**Date:** 2026-01-27
+**Status:** Accepted
+**Version:** 1.2.0
+
+### Context
+
+Memory scoring uses a frequency factor (10% weight), but retrieval_count was never actually incremented during context assembly.
+
+### Decision
+
+Implement **automatic retrieval tracking** in the assembler.
+
+### Implementation
+
+When a memory is included in a context frame:
+1. Call `increment_retrieval(memory_id, project_root)`
+2. This increments `retrieval_count` and updates `last_retrieved`
+
+### Consequences
+
+**Positive:**
+- Frequency factor now works as intended
+- Frequently-used memories rank higher over time
+- Creates feedback loop for relevance
+
+**Negative:**
+- Minor write overhead during assembly
+
+---
+
+## ADR-014: Won't Implement - Semantic Deduplication
+
+**Date:** 2026-01-27
+**Status:** Won't Implement
+**Reference:** MF-001
+
+### Context
+
+Expert review raised concern: semantically similar chunks from different documents could exist.
+
+### Decision
+
+**Won't implement** semantic deduplication.
+
+### Rationale
+
+1. **Retrieval handles it**: Top-k results naturally surface the best match
+2. **Duplicates aren't harmful**: Just slightly less efficient retrieval
+3. **Complexity cost**: Dedup logic adds maintenance burden
+4. **No observed problem**: Not seen in practice
+
+### Conclusion
+
+Solving a theoretical problem with no practical impact violates simplicity principle.
+
+---
+
+## ADR-015: Won't Implement - Memory Confidence Calibration
+
+**Date:** 2026-01-27
+**Status:** Won't Implement
+**Reference:** MF-003
+
+### Context
+
+Expert review noted: confidence is assigned by extraction pattern, not actual correctness.
+
+### Decision
+
+**Won't implement** confidence calibration.
+
+### Rationale
+
+1. **User approves memories**: Human-in-the-loop catches errors
+2. **Patterns are reasonable**: "Fixed by X" → high confidence is sensible
+3. **Complexity cost**: Verification systems add significant complexity
+4. **No observed problem**: Pattern-based confidence works in practice
+
+### Conclusion
+
+Current approach provides good-enough confidence with minimal complexity.
+
+---
+
+## ADR-016: Won't Implement - Query Refinement
+
+**Date:** 2026-01-27
+**Status:** Won't Implement
+**Reference:** MF-004
+
+### Context
+
+Expert review noted: if retrieval returns poor results, there's no mechanism to refine the query.
+
+### Decision
+
+**Won't implement** automatic query refinement.
+
+### Rationale
+
+1. **User can rephrase**: Natural interaction allows retry
+2. **Explicit trigger**: "cortex: X" provides direct control
+3. **Complexity cost**: Multi-turn refinement adds significant complexity
+4. **No observed problem**: Single-pass retrieval works well
+
+### Conclusion
+
+Human-in-the-loop query refinement is simpler and equally effective.

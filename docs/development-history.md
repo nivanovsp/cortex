@@ -221,4 +221,86 @@ Potential improvements not in current scope:
 
 ---
 
-*Cortex v1.0.0 - Development completed 2026-01-26*
+---
+
+## v1.1.0 - Semi-Auto Session Protocol
+
+**Date:** 2026-01-26
+**Objective:** Natural language interaction without manual script invocation
+
+### Changes
+
+- Added Semi-Auto Session Protocol
+- Natural language triggers for task, retrieval, and session end
+- Updated all documentation for natural language-first usage
+- No code changes - protocol implemented through agent instructions
+
+See `docs/session-protocol-v1.1.0.md` for full design document.
+
+---
+
+## v1.2.0 - Cross-Platform & Provenance
+
+**Date:** 2026-01-27
+**Objective:** Cross-platform CLI, chunk provenance tracking, memory retrieval feedback
+
+### Expert Review Process
+
+An independent expert review was conducted, identifying:
+- 5 Legitimate Concerns (LC-001 through LC-005)
+- 4 Missing Features (MF-001 through MF-004)
+
+Review documents stored in `docs/reviews/`.
+
+### Implementation Decisions
+
+| Item | Decision | Rationale |
+|------|----------|-----------|
+| LC-002 | **Implemented** | Memory retrieval tracking (3 lines of code) |
+| LC-005 | **Implemented** | Python CLI replaces PowerShell |
+| MF-002 | **Implemented** | Chunk provenance with source_path, source_hash |
+| LC-001 | Deferred | Pattern extraction works well enough |
+| LC-003 | Deferred | e5-small-v2 is sufficient |
+| MF-001 | Won't Implement | Retrieval handles duplicates naturally |
+| MF-003 | Won't Implement | Pattern-based confidence is good enough |
+| MF-004 | Won't Implement | User can rephrase queries naturally |
+
+### Deliverables
+
+#### Python CLI (`cli/`)
+```
+cli/
+├── __init__.py
+├── __main__.py         # python -m cli entry point
+├── main.py             # Typer app
+└── commands/
+    ├── init.py
+    ├── chunk.py        # Added --refresh flag
+    ├── index.py
+    ├── retrieve.py
+    ├── assemble.py
+    ├── memory.py
+    ├── extract.py
+    └── status.py       # Added stale detection
+```
+
+#### Core Changes
+- `core/chunker.py` - Added source_path, source_hash, stale detection functions
+- `core/assembler.py` - Added increment_retrieval() call for memory tracking
+
+#### Documentation
+- Updated all docs for v1.2.0
+- Added 6 new ADRs (ADR-011 through ADR-016)
+- PowerShell deprecation notice in `scripts/README.md`
+
+### Verification
+
+- [x] Python CLI works on Windows
+- [x] Chunk provenance tracked in frontmatter
+- [x] Stale detection shows modified files
+- [x] --refresh flag deletes old chunks, creates new
+- [x] Memory retrieval_count increments during assembly
+
+---
+
+*Cortex v1.2.0 - Development completed 2026-01-27*

@@ -1,8 +1,8 @@
 # Cortex: LLM-Native Context Management
 
 **Status**: Specification
-**Version**: 1.0.0
-**Date**: 2026-01-26
+**Version**: 1.2.0
+**Date**: 2026-01-27
 **Author**: Claude (Architect Mode)
 
 ---
@@ -187,16 +187,28 @@ Source Document (2000 tokens)
 id: CHK-AUTH-001-003
 source_doc: DOC-AUTH-001
 source_section: "Token Refresh Logic"
+source_path: "docs/auth/tokens.md"      # v1.2.0: Provenance tracking
+source_hash: "a1b2c3d4e5f6..."          # v1.2.0: SHA256 for stale detection
 tokens: 47
 keywords: ["token", "refresh", "jwt", "cookie"]
 created: "2026-01-20"
 retrieval_count: 12
+last_retrieved: null
 ---
 
 Token refresh uses silent refresh pattern. Access tokens expire
 after 15 minutes. Refresh tokens stored in httpOnly cookies.
 On 401 response, automatically attempt refresh before retry.
 ```
+
+**Provenance Fields (v1.2.0):**
+
+| Field | Description |
+|-------|-------------|
+| `source_path` | Relative path to original source file |
+| `source_hash` | SHA256 hash of source content at chunking time |
+
+These fields enable **stale detection**: when a source file changes, chunks can be identified as outdated and refreshed.
 
 #### 3.2.2 Memory Store
 
@@ -231,6 +243,14 @@ The component threw a runtime error without the wrapper.
 | **Factual** | Stable knowledge | "API uses REST with JSON responses" |
 | **Experiential** | Lessons learned | "FormField wrapper required for PasswordInput" |
 | **Procedural** | How to do something | "Run tests before committing" |
+
+**Memory Retrieval Tracking (v1.2.0):**
+
+When a memory is included in a context frame, the system automatically:
+1. Increments `retrieval_count`
+2. Updates `last_retrieved` timestamp
+
+This creates a feedback loop where frequently-used memories rank higher in future retrievals (via the frequency factor in scoring).
 
 #### 3.2.3 Context Assembler
 
@@ -511,13 +531,14 @@ All technical decisions have been made:
 
 ### 8.1 Overview
 
-The Semi-Auto Session Protocol enables natural language interaction with Cortex, eliminating the need for users to know or invoke scripts directly.
+The Semi-Auto Session Protocol enables natural language interaction with Cortex, eliminating the need for users to know or invoke commands directly.
 
 **Design Principles:**
 1. **Zero pre-loaded content** - Only metadata at session start
 2. **Retrieval-based context** - Content enters through semantic search only
 3. **Natural language triggers** - Users speak naturally, agent handles mechanics
 4. **Human control preserved** - User triggers session end and approves learnings
+5. **Stale awareness (v1.2.0)** - Agent reports stale chunks at session start
 
 ### 8.2 Protocol Phases
 
@@ -525,14 +546,15 @@ The Semi-Auto Session Protocol enables natural language interaction with Cortex,
 
 **Trigger:** Agent awakens / conversation begins
 
-**Action:** Run `cortex-status.ps1`
+**Action:** Run `python -m cli status --json`
 
 **Result:** Metadata only (~50 tokens)
 - Chunk count and domains
 - Memory count
 - Index status
+- Stale chunks (v1.2.0)
 
-**User Experience:** Agent greets and reports Cortex is available. No content loaded.
+**User Experience:** Agent greets and reports Cortex is available. If stale chunks detected, agent mentions briefly. No content loaded.
 
 #### Phase 2: Task Identification (Automatic)
 
@@ -544,11 +566,11 @@ The Semi-Auto Session Protocol enables natural language interaction with Cortex,
   working on|work on|implement|build|create|fix|debug|update|modify)\s+(.+)
 ```
 
-**Action:** Run `cortex-assemble.ps1 -Task "{detected task}"`
+**Action:** Run `python -m cli assemble --task "{detected task}"`
 
 **Result:** Context frame (~2,500 tokens)
 - Relevant chunks
-- Relevant memories
+- Relevant memories (retrieval tracked - v1.2.0)
 - Position-optimized
 
 #### Phase 3: On-Demand Retrieval (Natural Language)
@@ -567,7 +589,7 @@ The Semi-Auto Session Protocol enables natural language interaction with Cortex,
 | "What did we learn about {X}" | Retrieval |
 | "cortex: {X}" | Explicit retrieval |
 
-**Action:** Run `cortex-retrieve.ps1 -Query "{X}"`
+**Action:** Run `python -m cli retrieve --query "{X}"`
 
 **Result:** Top relevant chunks (~1,500 tokens)
 
@@ -583,10 +605,10 @@ The Semi-Auto Session Protocol enables natural language interaction with Cortex,
 
 **Action:**
 1. Identify key learnings from session
-2. Run `cortex-extract.ps1 -Text "{learnings}"`
+2. Run `python -m cli extract --text "{learnings}"`
 3. Present proposed memories
 4. User approves selections
-5. Run `cortex-index.ps1` if memories saved
+5. Run `python -m cli index` if memories saved
 
 ### 8.3 Natural Language Trigger Reference
 
@@ -629,7 +651,9 @@ The Semi-Auto Session Protocol enables natural language interaction with Cortex,
 | Retrieval (×2) | ~3,000 | 1.5% |
 | **Typical total** | **~5,550** | **~2.8%** |
 
-Leaves **97%+ context** for actual work.
+*Assumes 2 retrievals per session. Heavy debugging may reach 10-15%.*
+
+Leaves **90%+ context** for actual work.
 
 ---
 
@@ -639,36 +663,59 @@ Leaves **97%+ context** for actual work.
 .cortex/
 ├── chunks/
 │   ├── AUTH/
-│   │   ├── AUTH-001-001.md     # Chunk (Markdown)
-│   │   ├── AUTH-001-001.emb    # Embedding (binary)
+│   │   ├── CHK-AUTH-001-001.md     # Chunk (Markdown + frontmatter)
+│   │   ├── CHK-AUTH-001-001.npy    # Embedding (NumPy binary)
 │   │   └── ...
 │   └── UI/
 │       └── ...
 ├── memories/
-│   ├── MEM-2026-01-20-001.md
-│   ├── MEM-2026-01-20-001.emb
+│   ├── MEM-2026-01-20-001.md       # Memory (Markdown)
+│   ├── MEM-2026-01-20-001.npy      # Embedding (NumPy binary)
 │   └── ...
 ├── index/
-│   ├── chunks.pkl
-│   ├── chunks.meta.json
-│   ├── memories.pkl
-│   └── memories.meta.json
+│   ├── chunks.pkl                   # Consolidated chunk embeddings
+│   ├── chunks.meta.json             # Chunk ID → metadata mapping
+│   ├── memories.pkl                 # Consolidated memory embeddings
+│   └── memories.meta.json           # Memory metadata
 └── cache/
-    └── embeddings/
+    └── embeddings/                  # Future: embedding cache
+```
+
+**Chunk Frontmatter (v1.2.0):**
+```yaml
+id: CHK-AUTH-001-001
+source_doc: DOC-AUTH-001
+source_section: "Token Refresh"
+source_lines: [10, 45]
+source_path: "docs/auth/tokens.md"   # Provenance
+source_hash: "a1b2c3d4e5f6..."       # For stale detection
+tokens: 487
+keywords: ["token", "refresh", "auth"]
+created: "2026-01-27T10:00:00"
+last_retrieved: null
+retrieval_count: 0
 ```
 
 ---
 
-## Appendix B: Scripts
+## Appendix B: CLI Commands (v1.2.0)
 
-| Script | Purpose |
-|--------|---------|
-| `cortex-init` | Initialize Cortex in a project |
-| `cortex-chunk` | Chunk a document |
-| `cortex-index` | Rebuild indices |
-| `cortex-retrieve` | Test retrieval |
-| `cortex-assemble` | Build context frame |
-| `cortex-memory` | Manage memories |
+**Note:** As of v1.2.0, Cortex uses a cross-platform Python CLI. PowerShell scripts are deprecated.
+
+| Command | Purpose |
+|---------|---------|
+| `python -m cli init` | Initialize Cortex in a project |
+| `python -m cli chunk --path <file>` | Chunk a document |
+| `python -m cli chunk --path <file> --refresh` | Refresh stale chunks |
+| `python -m cli index` | Rebuild indices |
+| `python -m cli retrieve --query <text>` | Test retrieval |
+| `python -m cli assemble --task <text>` | Build context frame |
+| `python -m cli memory add --learning <text>` | Add a memory |
+| `python -m cli memory list` | List memories |
+| `python -m cli memory delete <id>` | Delete a memory |
+| `python -m cli extract --text <text>` | Extract learnings |
+| `python -m cli status` | Show status and stale chunks |
+| `python -m cli status --json` | JSON output for automation |
 
 ---
 
@@ -741,4 +788,35 @@ Test with manually expired tokens.
 
 ---
 
-*Cortex v1.0.0 - LLM-Native Context Management*
+## Appendix E: Stale Detection (v1.2.0)
+
+Cortex tracks source file changes to ensure context is current.
+
+### Detection
+
+When `python -m cli status` runs, it:
+1. Reads each chunk's `source_path` and `source_hash`
+2. Computes current SHA256 of the source file
+3. Compares hashes - mismatch indicates stale chunk
+
+### Refresh Workflow
+
+```bash
+# 1. Check for stale chunks
+python -m cli status
+
+# 2. Refresh stale file(s)
+python -m cli chunk --path docs/changed-file.md --refresh
+
+# 3. Rebuild index
+python -m cli index
+```
+
+The `--refresh` flag:
+1. Finds existing chunks from that source file
+2. Deletes them
+3. Creates new chunks with updated content and hash
+
+---
+
+*Cortex v1.2.0 - LLM-Native Context Management*

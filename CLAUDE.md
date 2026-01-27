@@ -10,11 +10,11 @@
 
 **Cortex** is an LLM-native context management system. It optimizes how documentation and learnings are stored, retrieved, and assembled for LLM consumption.
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 
 ---
 
-## Session Protocol (v1.1.0)
+## Session Protocol (v1.2.0)
 
 This protocol defines how you (the agent) interact with Cortex throughout a session. Follow these instructions automatically — users should not need to know about scripts.
 
@@ -22,10 +22,11 @@ This protocol defines how you (the agent) interact with Cortex throughout a sess
 
 When the conversation begins:
 
-1. Run `.\scripts\cortex-status.ps1` silently
-2. Note the result internally (chunk count, memory count, domains, index status)
+1. Run `python -m cli status --json` silently
+2. Note the result internally (chunk count, memory count, domains, stale chunks)
 3. **DO NOT** load any content files — wait for task identification
 4. Greet the user and mention Cortex is available if relevant
+5. If stale chunks detected, mention briefly (user can refresh if needed)
 
 **Context cost:** ~50 tokens (metadata only)
 
@@ -42,9 +43,9 @@ When the user specifies what to work on, detect phrases like:
 
 **Action:**
 1. Extract the task from their statement
-2. Run `.\scripts\cortex-assemble.ps1 -Task "{extracted task}"`
+2. Run `python -m cli assemble --task "{extracted task}"`
 3. Use the returned context frame to inform your work
-4. **DO NOT** mention the script to the user — just have the context
+4. **DO NOT** mention the command to the user — just have the context
 
 **Context cost:** ~2,500 tokens
 
@@ -62,9 +63,9 @@ When the user asks for more information, detect phrases like:
 
 **Action:**
 1. Extract the topic from their question
-2. Run `.\scripts\cortex-retrieve.ps1 -Query "{topic}"`
+2. Run `python -m cli retrieve --query "{topic}"`
 3. Present the information naturally
-4. **DO NOT** mention the script — just answer their question
+4. **DO NOT** mention the command — just answer their question
 
 **Context cost:** ~1,500 tokens per retrieval
 
@@ -79,11 +80,11 @@ When the user explicitly requests learning extraction, detect phrases like:
 
 **Action:**
 1. Identify key learnings from the session (fixes, discoveries, procedures)
-2. Run `.\scripts\cortex-extract.ps1 -Text "{learnings summary}"`
+2. Run `python -m cli extract --text "{learnings summary}"`
 3. Present proposed memories to the user with confidence levels
 4. Ask which memories to save
 5. Save approved memories
-6. Run `.\scripts\cortex-index.ps1` to rebuild the index
+6. Run `python -m cli index` to rebuild the index
 
 ### Context Budget
 
@@ -94,7 +95,9 @@ When the user explicitly requests learning extraction, detect phrases like:
 | On-demand retrieval (×2) | ~3,000 | 1.5% |
 | **Typical session total** | **~5,550** | **~2.8%** |
 
-**97%+ of context remains available for actual work.**
+*Assumes 2 retrievals per session. Heavy debugging may reach 10-15%.*
+
+**90%+ of context remains available for actual work.**
 
 ### Important Rules
 
@@ -109,16 +112,19 @@ When the user explicitly requests learning extraction, detect phrases like:
 
 ```
 Cortex/
-├── core/                 # Python modules
+├── core/                 # Python core modules
 │   ├── config.py         # Configuration
 │   ├── embedder.py       # e5-small-v2 wrapper
-│   ├── chunker.py        # Document chunking
+│   ├── chunker.py        # Document chunking + provenance
 │   ├── indexer.py        # Vector index management
 │   ├── retriever.py      # Semantic search
-│   ├── memory.py         # Memory CRUD
+│   ├── memory.py         # Memory CRUD + retrieval tracking
 │   ├── assembler.py      # Context frame assembly
 │   └── extractor.py      # Memory extraction
-├── scripts/              # PowerShell CLI
+├── cli/                  # Python CLI (cross-platform)
+│   ├── main.py           # Typer app entry point
+│   └── commands/         # Command implementations
+├── scripts/              # PowerShell CLI (deprecated)
 ├── docs/                 # Documentation
 ├── templates/            # Chunk/memory templates
 └── .cortex/              # Runtime data (chunks, memories, indices)
@@ -153,14 +159,15 @@ Cortex/
 
 ### Adding New Features
 1. Core logic goes in `core/` as Python modules
-2. CLI interface in `scripts/` as PowerShell
+2. CLI interface in `cli/commands/` as Python (Typer)
 3. Update `core/__init__.py` to export new functions
 4. Add tests and documentation
 
 ### Modifying Chunking/Embedding
 - Chunk size: 500 tokens max (matches e5-small-v2)
 - Overlap: 50 tokens for continuity
-- Always rebuild index after changes: `.\scripts\cortex-index.ps1`
+- Always rebuild index after changes: `python -m cli index`
+- Use `--refresh` flag when re-chunking modified files
 
 ### Environment Variables
 All optional - defaults work out of the box:
@@ -170,26 +177,30 @@ All optional - defaults work out of the box:
 
 ---
 
-## Script Reference (Internal)
+## CLI Reference (Internal)
 
-These scripts are called automatically by the session protocol. Users should not need to invoke them directly.
+These commands are called automatically by the session protocol. Users should not need to invoke them directly.
 
-| Script | Purpose | When Called |
-|--------|---------|-------------|
-| `cortex-status.ps1` | Get system metadata | Session start |
-| `cortex-assemble.ps1 -Task "..."` | Build context frame | Task identified |
-| `cortex-retrieve.ps1 -Query "..."` | Search for context | User asks for info |
-| `cortex-extract.ps1 -Text "..."` | Extract learnings | User ends session |
-| `cortex-index.ps1` | Rebuild indices | After saving memories |
-| `cortex-memory.ps1 -Action add` | Add memory manually | Explicit request |
-| `cortex-init.ps1` | Initialize Cortex | Project setup |
-| `cortex-chunk.ps1 -Path "..."` | Chunk documents | Adding new docs |
+| Command | Purpose | When Called |
+|---------|---------|-------------|
+| `python -m cli status` | Get system metadata | Session start |
+| `python -m cli assemble --task "..."` | Build context frame | Task identified |
+| `python -m cli retrieve --query "..."` | Search for context | User asks for info |
+| `python -m cli extract --text "..."` | Extract learnings | User ends session |
+| `python -m cli index` | Rebuild indices | After saving memories |
+| `python -m cli memory add --learning "..."` | Add memory manually | Explicit request |
+| `python -m cli init` | Initialize Cortex | Project setup |
+| `python -m cli chunk --path "..."` | Chunk documents | Adding new docs |
+| `python -m cli chunk --path "..." --refresh` | Re-chunk modified files | Stale chunks detected |
 
 ---
 
 ## Important Notes
 
-- **Index Rebuild**: After adding chunks or memories, run `cortex-index.ps1`
+- **Index Rebuild**: After adding chunks or memories, run `python -m cli index`
+- **Stale Detection**: Status shows chunks from modified source files
+- **Refresh Workflow**: Use `--refresh` flag to delete old chunks and re-chunk
 - **Token Budget**: Context frames target ~8% of 200k context window
 - **Position Optimization**: Critical info placed at start/end (primacy/recency zones)
 - **Local Embeddings**: e5-small-v2 runs locally, no API costs
+- **Cross-Platform**: Python CLI works on Windows, Mac, and Linux

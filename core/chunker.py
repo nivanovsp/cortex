@@ -7,6 +7,7 @@ Semantic-aware markdown chunking with embedding generation.
 import os
 import re
 import json
+import hashlib
 from pathlib import Path
 from datetime import datetime
 from dataclasses import dataclass, asdict
@@ -28,6 +29,8 @@ class Chunk:
     keywords: list[str]
     content: str
     created: str
+    source_path: str = ""
+    source_hash: str = ""
 
 
 def count_tokens(text: str) -> int:
@@ -293,9 +296,17 @@ def chunk_document(
     doc_num = get_next_doc_number(chunks_path, domain)
     doc_id = f"DOC-{domain}-{doc_num:03d}"
 
-    # Read document
+    # Read document and compute hash
     with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
+    source_hash = hashlib.sha256(content.encode('utf-8')).hexdigest()
+
+    # Store relative path for portability
+    try:
+        source_path = os.path.relpath(path, project_root)
+    except ValueError:
+        # On Windows, relpath fails across drives
+        source_path = path
 
     # Parse into sections
     sections = parse_sections(content)
@@ -344,7 +355,9 @@ def chunk_document(
                 tokens=chunk_tokens,
                 keywords=extract_keywords(chunk_text),
                 content=chunk_text,
-                created=datetime.now().isoformat()
+                created=datetime.now().isoformat(),
+                source_path=source_path,
+                source_hash=source_hash
             )
             all_chunks.append(chunk)
             chunk_seq += 1
@@ -369,6 +382,8 @@ id: {chunk.id}
 source_doc: {chunk.source_doc}
 source_section: "{chunk.source_section}"
 source_lines: [{chunk.source_lines[0]}, {chunk.source_lines[1]}]
+source_path: "{chunk.source_path}"
+source_hash: "{chunk.source_hash}"
 tokens: {chunk.tokens}
 keywords: {json.dumps(chunk.keywords)}
 created: "{chunk.created}"
@@ -422,6 +437,174 @@ def chunk_directory(
                     print(f"Error chunking {file_path}: {e}")
 
     return all_chunks
+
+
+def compute_file_hash(path: str) -> str:
+    """Compute SHA256 hash of a file's content."""
+    with open(path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    return hashlib.sha256(content.encode('utf-8')).hexdigest()
+
+
+def parse_chunk_metadata(chunk_path: str) -> dict:
+    """Parse metadata from a chunk's markdown frontmatter."""
+    with open(chunk_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    if not content.startswith('---'):
+        return {}
+
+    end_idx = content.find('---', 3)
+    if end_idx == -1:
+        return {}
+
+    frontmatter = content[3:end_idx].strip()
+    meta = {}
+
+    for line in frontmatter.split('\n'):
+        if ':' in line:
+            key, value = line.split(':', 1)
+            key = key.strip()
+            value = value.strip()
+
+            # Parse quoted strings
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1]
+
+            meta[key] = value
+
+    return meta
+
+
+def get_stale_chunks(project_root: str = ".") -> list[dict]:
+    """
+    Find chunks whose source files have changed.
+
+    Returns list of {chunk_id, source_path, stored_hash, current_hash}
+    """
+    project_root = os.path.abspath(project_root)
+    chunks_path = Config.get_chunks_path(project_root)
+
+    if not os.path.exists(chunks_path):
+        return []
+
+    stale = []
+    checked_sources = {}  # Cache: source_path -> current_hash
+
+    for domain in os.listdir(chunks_path):
+        domain_path = os.path.join(chunks_path, domain)
+        if not os.path.isdir(domain_path):
+            continue
+
+        for f in os.listdir(domain_path):
+            if not f.endswith('.md'):
+                continue
+
+            chunk_path = os.path.join(domain_path, f)
+            meta = parse_chunk_metadata(chunk_path)
+
+            source_path = meta.get('source_path', '')
+            stored_hash = meta.get('source_hash', '')
+
+            if not source_path or not stored_hash:
+                continue  # Old chunk without provenance data
+
+            # Resolve source path relative to project root
+            full_source_path = os.path.join(project_root, source_path)
+
+            if not os.path.exists(full_source_path):
+                # Source file deleted - mark as stale
+                stale.append({
+                    'chunk_id': meta.get('id', f.replace('.md', '')),
+                    'source_path': source_path,
+                    'stored_hash': stored_hash,
+                    'current_hash': None,
+                    'status': 'deleted'
+                })
+                continue
+
+            # Get or compute current hash
+            if source_path not in checked_sources:
+                checked_sources[source_path] = compute_file_hash(full_source_path)
+
+            current_hash = checked_sources[source_path]
+
+            if current_hash != stored_hash:
+                stale.append({
+                    'chunk_id': meta.get('id', f.replace('.md', '')),
+                    'source_path': source_path,
+                    'stored_hash': stored_hash,
+                    'current_hash': current_hash,
+                    'status': 'modified'
+                })
+
+    return stale
+
+
+def get_chunks_by_source(source_path: str, project_root: str = ".") -> list[str]:
+    """Find all chunk IDs that came from a given source file."""
+    project_root = os.path.abspath(project_root)
+    chunks_path = Config.get_chunks_path(project_root)
+
+    # Normalize source path for comparison
+    try:
+        normalized_source = os.path.relpath(os.path.abspath(source_path), project_root)
+    except ValueError:
+        normalized_source = source_path
+
+    if not os.path.exists(chunks_path):
+        return []
+
+    chunk_ids = []
+
+    for domain in os.listdir(chunks_path):
+        domain_path = os.path.join(chunks_path, domain)
+        if not os.path.isdir(domain_path):
+            continue
+
+        for f in os.listdir(domain_path):
+            if not f.endswith('.md'):
+                continue
+
+            chunk_path = os.path.join(domain_path, f)
+            meta = parse_chunk_metadata(chunk_path)
+
+            chunk_source = meta.get('source_path', '')
+
+            # Compare normalized paths
+            if chunk_source == normalized_source:
+                chunk_ids.append(meta.get('id', f.replace('.md', '')))
+
+    return chunk_ids
+
+
+def delete_chunks(chunk_ids: list[str], project_root: str = ".") -> int:
+    """Delete chunks by their IDs. Returns count of deleted chunks."""
+    project_root = os.path.abspath(project_root)
+    chunks_path = Config.get_chunks_path(project_root)
+
+    deleted = 0
+
+    for chunk_id in chunk_ids:
+        # Parse domain from chunk ID (CHK-DOMAIN-DOC-SEQ)
+        parts = chunk_id.split('-')
+        if len(parts) < 2:
+            continue
+
+        domain = parts[1]
+        domain_path = os.path.join(chunks_path, domain)
+
+        md_path = os.path.join(domain_path, f"{chunk_id}.md")
+        npy_path = os.path.join(domain_path, f"{chunk_id}.npy")
+
+        if os.path.exists(md_path):
+            os.remove(md_path)
+            deleted += 1
+
+        if os.path.exists(npy_path):
+            os.remove(npy_path)
+
+    return deleted
 
 
 # CLI entry point

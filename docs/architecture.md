@@ -1,5 +1,7 @@
 # Cortex Architecture
 
+**Version:** 1.2.0
+
 ## Overview
 
 Cortex is an LLM-native context management system built on the principle that LLMs process information differently than humans. It optimizes for:
@@ -7,20 +9,28 @@ Cortex is an LLM-native context management system built on the principle that LL
 - **Attention patterns** - Critical information positioned where LLMs pay most attention
 - **Semantic retrieval** - Content found via embedding similarity, not manual links
 - **Minimal context consumption** - Only load what's needed for the current task
+- **Content freshness** - Track source changes and detect stale chunks (v1.2.0)
 
 ## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         CORTEX SYSTEM                                │
+│                         CORTEX SYSTEM (v1.2.0)                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
+│  ┌────────────────────────────────────────────────────────────┐     │
+│  │                    CLI LAYER (cli/)                         │     │
+│  │  python -m cli <command>     Cross-platform (Typer)        │     │
+│  └────────────────────────────────────────────────────────────┘     │
+│                             │                                        │
+│                             ▼                                        │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐          │
 │  │   CHUNKER    │    │   EMBEDDER   │    │   INDEXER    │          │
 │  │              │    │              │    │              │          │
 │  │ - Markdown   │───►│ - e5-small   │───►│ - NumPy      │          │
 │  │ - Semantic   │    │ - 384 dims   │    │ - Pickle     │          │
 │  │ - 500 tokens │    │ - Local      │    │ - Brute-force│          │
+│  │ - Provenance │    │              │    │              │          │
 │  └──────────────┘    └──────────────┘    └──────────────┘          │
 │         │                   │                   │                   │
 │         └───────────────────┼───────────────────┘                   │
@@ -44,7 +54,11 @@ Cortex is an LLM-native context management system built on the principle that LL
 │  │              │  │ - Position   │  │ - Pattern    │             │
 │  │ - CRUD       │  │ - Budget     │  │ - Confidence │             │
 │  │ - Types      │  │ - Frame      │  │ - Propose    │             │
+│  │ - Tracking   │  │ - Tracking   │  │              │             │
 │  └──────────────┘  └──────────────┘  └──────────────┘             │
+│         ▲                   │                                        │
+│         │                   │                                        │
+│         └───────────────────┘  Retrieval feedback loop (v1.2.0)    │
 │                             │                                        │
 │                             ▼                                        │
 │                    ┌──────────────────┐                             │
@@ -72,14 +86,28 @@ Breaks documents into semantic units optimized for retrieval.
 
 **Algorithm:**
 1. Parse markdown headers to identify sections
-2. Split by headers first (preserve semantic boundaries)
-3. If section > 500 tokens, split by paragraphs
-4. Merge chunks < 50 tokens with neighbors
-5. Add 50-token overlap at boundaries
+2. Compute source file hash (SHA256) for provenance tracking (v1.2.0)
+3. Split by headers first (preserve semantic boundaries)
+4. If section > 500 tokens, split by paragraphs
+5. Merge chunks < 50 tokens with neighbors
+6. Add 50-token overlap at boundaries
 
 **Output:**
-- `.md` files with YAML frontmatter (metadata)
+- `.md` files with YAML frontmatter (metadata + provenance)
 - `.npy` files with embeddings (NumPy binary)
+
+**Provenance Tracking (v1.2.0):**
+
+Each chunk stores its source file information:
+```yaml
+source_path: "docs/architecture.md"   # Relative path to source
+source_hash: "a1b2c3d4e5f6..."        # SHA256 of source content
+```
+
+This enables:
+- **Stale detection**: Compare stored hash vs current file hash
+- **Refresh workflow**: Delete old chunks, create new ones
+- **Traceability**: Know exactly where each chunk came from
 
 ### 2. Embedder (`core/embedder.py`)
 
@@ -155,7 +183,16 @@ learning: "The core insight"
 context: "When/how this was learned"
 verified: true | false
 retrieval_count: N
+last_retrieved: "ISO timestamp"
 ```
+
+**Retrieval Tracking (v1.2.0):**
+
+When a memory is included in a context frame, the system automatically:
+1. Increments `retrieval_count`
+2. Updates `last_retrieved` timestamp
+
+This creates a feedback loop where frequently-used memories rank higher in future retrievals (10% weight in scoring formula).
 
 ### 6. Assembler (`core/assembler.py`)
 
@@ -208,16 +245,65 @@ Task → Embedder → Query Vector → Retriever → Ranked Results → Assemble
 Session → Extractor → Proposed Memories → User Approval → Memory Store → Indexer → Index
 ```
 
+## Stale Detection & Refresh (v1.2.0)
+
+Cortex tracks source file changes to ensure context is current.
+
+### Detection Flow
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│ cli status  │────►│ Read chunks │────►│Compare hash │
+└─────────────┘     └─────────────┘     └──────┬──────┘
+                                               │
+                    ┌──────────────────────────┴──────────────────────────┐
+                    │                                                      │
+                    ▼                                                      ▼
+           ┌───────────────┐                                    ┌───────────────┐
+           │ Hash matches  │                                    │ Hash differs  │
+           │   (fresh)     │                                    │   (stale)     │
+           └───────────────┘                                    └───────┬───────┘
+                                                                        │
+                                                                        ▼
+                                                               ┌───────────────┐
+                                                               │ Report stale  │
+                                                               │ chunks to user│
+                                                               └───────────────┘
+```
+
+### Refresh Flow
+
+```
+┌──────────────────────┐     ┌──────────────────┐     ┌─────────────┐
+│ cli chunk --refresh  │────►│ Find old chunks  │────►│Delete old   │
+└──────────────────────┘     │ by source_path   │     │chunks       │
+                             └──────────────────┘     └──────┬──────┘
+                                                             │
+                                                             ▼
+                                                      ┌─────────────┐
+                                                      │Create new   │
+                                                      │chunks       │
+                                                      └──────┬──────┘
+                                                             │
+                                                             ▼
+                                                      ┌─────────────┐
+                                                      │cli index    │
+                                                      │(rebuild)    │
+                                                      └─────────────┘
+```
+
+---
+
 ## Storage Layout
 
 ```
 .cortex/
 ├── chunks/
 │   └── {DOMAIN}/
-│       ├── CHK-{DOMAIN}-{DOC}-{SEQ}.md   # Content + frontmatter
+│       ├── CHK-{DOMAIN}-{DOC}-{SEQ}.md   # Content + frontmatter + provenance
 │       └── CHK-{DOMAIN}-{DOC}-{SEQ}.npy  # Embedding
 ├── memories/
-│   ├── MEM-{DATE}-{SEQ}.md               # Memory content
+│   ├── MEM-{DATE}-{SEQ}.md               # Memory content + tracking
 │   └── MEM-{DATE}-{SEQ}.npy              # Embedding
 ├── index/
 │   ├── chunks.pkl                         # Consolidated chunk embeddings
@@ -226,6 +312,22 @@ Session → Extractor → Proposed Memories → User Approval → Memory Store �
 │   └── memories.meta.json                 # Memory metadata
 └── cache/
     └── embeddings/                        # Future: embedding cache
+```
+
+### Chunk Frontmatter (v1.2.0)
+
+```yaml
+id: CHK-AUTH-001-001
+source_doc: DOC-AUTH-001
+source_section: "Token Refresh"
+source_lines: [10, 45]
+source_path: "docs/auth/tokens.md"      # v1.2.0
+source_hash: "a1b2c3d4e5f6..."          # v1.2.0
+tokens: 487
+keywords: ["token", "refresh", "auth"]
+created: "2026-01-27T10:00:00"
+last_retrieved: null
+retrieval_count: 0
 ```
 
 ## Performance Characteristics
@@ -238,7 +340,38 @@ Session → Extractor → Proposed Memories → User Approval → Memory Store �
 | Retrieve top-k | O(n) | <1ms for 500 vectors |
 | Assemble context | O(k) | ~100ms |
 
-## Session Protocol (v1.1.0)
+## CLI Layer (v1.2.0)
+
+The CLI layer (`cli/`) provides a cross-platform interface using Python and Typer.
+
+### Structure
+
+```
+cli/
+├── __init__.py         # Package init
+├── __main__.py         # python -m cli entry point
+├── main.py             # Typer app with command registration
+└── commands/
+    ├── init.py         # cortex init
+    ├── chunk.py        # cortex chunk
+    ├── index.py        # cortex index
+    ├── retrieve.py     # cortex retrieve
+    ├── assemble.py     # cortex assemble
+    ├── memory.py       # cortex memory add/list/delete
+    ├── extract.py      # cortex extract
+    └── status.py       # cortex status
+```
+
+### Design Principles
+
+- **Single codebase**: One Python CLI works on Windows, Mac, Linux
+- **Thin wrapper**: Commands call core modules directly
+- **Lazy imports**: Core modules loaded only when needed
+- **Natural defaults**: Sensible defaults, minimal required args
+
+---
+
+## Session Protocol (v1.2.0)
 
 The Semi-Auto Session Protocol defines how agents interact with Cortex throughout a working session.
 
@@ -246,7 +379,7 @@ The Semi-Auto Session Protocol defines how agents interact with Cortex throughou
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     SEMI-AUTO SESSION PROTOCOL                           │
+│                     SEMI-AUTO SESSION PROTOCOL (v1.2.0)                  │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  ┌────────────────┐                                                      │
@@ -255,11 +388,11 @@ The Semi-Auto Session Protocol defines how agents interact with Cortex throughou
 │          │                                                               │
 │          ▼                                                               │
 │  ┌────────────────┐                                                      │
-│  │ cortex-status  │  Metadata only (~50 tokens)                         │
+│  │ cli status     │  Metadata only (~50 tokens)                         │
 │  │                │  • Chunk count                                       │
 │  │  [AUTOMATIC]   │  • Memory count                                      │
 │  │                │  • Domains available                                 │
-│  └───────┬────────┘  • Index status                                      │
+│  └───────┬────────┘  • Stale chunks (v1.2.0)                            │
 │          │                                                               │
 │          ▼                                                               │
 │  ┌────────────────┐                                                      │
@@ -269,9 +402,9 @@ The Semi-Auto Session Protocol defines how agents interact with Cortex throughou
 │          │                                                               │
 │          ▼                                                               │
 │  ┌────────────────┐                                                      │
-│  │cortex-assemble │  Retrieves relevant context (~2,500 tokens)         │
+│  │ cli assemble   │  Retrieves relevant context (~2,500 tokens)         │
 │  │                │  • Relevant chunks                                   │
-│  │  [AUTOMATIC]   │  • Relevant memories                                 │
+│  │  [AUTOMATIC]   │  • Relevant memories (tracking updated)             │
 │  │                │  • Position-optimized frame                          │
 │  └───────┬────────┘                                                      │
 │          │                                                               │
@@ -289,7 +422,7 @@ The Semi-Auto Session Protocol defines how agents interact with Cortex throughou
 │          │                                       │                      │
 │          ▼                                       │                      │
 │  ┌────────────────┐                              │                      │
-│  │cortex-retrieve │  On-demand retrieval         │                      │
+│  │ cli retrieve   │  On-demand retrieval         │                      │
 │  │                │  (~1,500 tokens per query)   │                      │
 │  │  [AUTOMATIC]   │                              │                      │
 │  └───────┬────────┘                              │                      │
@@ -305,8 +438,8 @@ The Semi-Auto Session Protocol defines how agents interact with Cortex throughou
 │          │                                                               │
 │          ▼                                                               │
 │  ┌────────────────┐                                                      │
-│  │ cortex-extract │  Proposes memories                                  │
-│  │ cortex-index   │  User approves                                      │
+│  │ cli extract    │  Proposes memories                                  │
+│  │ cli index      │  User approves                                      │
 │  │                │  Index rebuilt                                       │
 │  │  [AUTOMATIC]   │                                                      │
 │  └────────────────┘                                                      │
@@ -322,6 +455,8 @@ The Semi-Auto Session Protocol defines how agents interact with Cortex throughou
 | Task context (assembly) | ~2,500 | 1.25% |
 | On-demand retrieval (×2) | ~3,000 | 1.5% |
 | **Typical total** | **~5,550** | **2.8%** |
+
+*Assumes 2 retrievals per session. Heavy debugging may reach 10-15%.*
 
 ### Trigger Detection
 

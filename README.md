@@ -4,12 +4,14 @@
 
 Cortex is a methodology for managing documentation and context in LLM-powered development workflows. It's designed around how LLMs actually process information, not human cognitive metaphors.
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 
 ## Key Features
 
-- **Natural language interaction** - Just talk, agent handles scripts automatically **(New in v1.1.0)**
-- **~2.8% context consumption** - Efficient retrieval-based context loading
+- **Natural language interaction** - Just talk, agent handles commands automatically
+- **Cross-platform CLI** - Python-based, works on Windows, Mac, Linux **(New in v1.2.0)**
+- **Stale chunk detection** - Tracks source file changes automatically **(New in v1.2.0)**
+- **~3-10% context consumption** - Retrieval-based loading (vs 30%+ for full docs)
 - **Position-aware assembly** - Critical info where LLMs pay attention
 - **Semantic retrieval** - Find relevant content via similarity, not manual links
 - **Memory system** - Capture and reuse learnings across sessions
@@ -20,79 +22,94 @@ Cortex is a methodology for managing documentation and context in LLM-powered de
 
 ### 1. Clone or Copy Cortex
 
-```powershell
+```bash
 # Clone the repository
-git clone https://github.com/your-org/cortex.git
+git clone https://github.com/nivanovsp/cortex.git
 
 # Or copy to your project
-Copy-Item -Recurse cortex/ your-project/
+cp -r cortex/ your-project/
 ```
 
-### 2. Add Global Claude Code Rules (Recommended)
+### 2. Install Dependencies
+
+```bash
+cd cortex
+pip install -r requirements.txt
+```
+
+### 3. Add Global Claude Code Rules (Recommended)
 
 For full Claude Code integration, add the Cortex rules to your global CLAUDE.md:
 
-```powershell
+```bash
 # View the rules to add
-Get-Content cortex/global/CLAUDE.md
+cat cortex/global/CLAUDE.md
 
 # Then manually add to: ~/.claude/CLAUDE.md
 ```
 
 Or copy the contents of `global/CLAUDE.md` and append to your `~/.claude/CLAUDE.md`.
 
-### 3. Initialize in Your Project
+### 4. Initialize in Your Project
 
-```powershell
+```bash
 cd your-project
-.\cortex\scripts\cortex-init.ps1
+python -m cli init
 ```
 
 ## Quick Start
 
-```powershell
+```bash
 # Initialize Cortex in your project
-.\scripts\cortex-init.ps1
+python -m cli init
 
 # Chunk your documents
-.\scripts\cortex-chunk.ps1 -Path "docs/"
+python -m cli chunk --path docs/
 
 # Build the index
-.\scripts\cortex-index.ps1
+python -m cli index
 
 # Build context frame for a task
-.\scripts\cortex-assemble.ps1 -Task "Implement user authentication"
+python -m cli assemble --task "Implement user authentication"
+
+# Check status (including stale chunks)
+python -m cli status
 ```
 
-## Scripts Reference
+## CLI Reference
 
 ### Core Operations
 
-| Script | Purpose | Example |
-|--------|---------|---------|
-| `cortex-init.ps1` | Initialize Cortex in project | `.\scripts\cortex-init.ps1` |
-| `cortex-chunk.ps1` | Chunk documents into semantic units | `.\scripts\cortex-chunk.ps1 -Path "docs/"` |
-| `cortex-index.ps1` | Build/rebuild vector indices | `.\scripts\cortex-index.ps1` |
-| `cortex-retrieve.ps1` | Test retrieval with a query | `.\scripts\cortex-retrieve.ps1 -Query "auth token"` |
-| `cortex-assemble.ps1` | Build context frame for a task | `.\scripts\cortex-assemble.ps1 -Task "Fix login"` |
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `init` | Initialize Cortex in project | `python -m cli init` |
+| `chunk` | Chunk documents into semantic units | `python -m cli chunk --path docs/` |
+| `index` | Build/rebuild vector indices | `python -m cli index` |
+| `retrieve` | Search for relevant context | `python -m cli retrieve --query "auth token"` |
+| `assemble` | Build context frame for a task | `python -m cli assemble --task "Fix login"` |
+| `status` | Show Cortex statistics | `python -m cli status` |
 
 ### Memory Management
 
-| Script | Purpose | Example |
-|--------|---------|---------|
-| `cortex-memory.ps1 -Action add` | Create a memory | `-Learning "X requires Y" -Domain AUTH` |
-| `cortex-memory.ps1 -Action list` | List all memories | `-Domain AUTH` (optional filter) |
-| `cortex-memory.ps1 -Action query` | Search memories | `-Query "form validation"` |
-| `cortex-memory.ps1 -Action update` | Update a memory | `-Id "MEM-..." -Verified` |
-| `cortex-memory.ps1 -Action delete` | Delete a memory | `-Id "MEM-..."` |
-| `cortex-memory.ps1 -Action related` | Find related memories | `-Id "MEM-..."` |
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `memory add` | Create a memory | `python -m cli memory add --learning "X requires Y" --domain AUTH` |
+| `memory list` | List all memories | `python -m cli memory list --domain AUTH` |
+| `memory delete` | Delete a memory | `python -m cli memory delete MEM-2026-01-26-001` |
 
-### Session Integration
+### Session & Extraction
 
-| Script | Purpose | Example |
-|--------|---------|---------|
-| `cortex-extract.ps1` | Extract learnings from text | `-Text "Fixed by adding null check"` |
-| `cortex-status.ps1` | Show Cortex statistics | `-Json` for programmatic use |
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `extract` | Extract learnings from text | `python -m cli extract --text "Fixed by..."` |
+| `status --json` | JSON output for automation | `python -m cli status --json` |
+
+### Stale Chunk Management (v1.2.0)
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `status` | Shows stale chunks | `python -m cli status` |
+| `chunk --refresh` | Refresh stale chunks | `python -m cli chunk --path file.md --refresh` |
 
 ## Claude Code Integration
 
@@ -121,22 +138,22 @@ You: "Update learning"
 
 ### Manual Workflow (Advanced)
 
-For power users who prefer direct script control:
+For power users who prefer direct CLI control:
 
 1. **Session Start**: Check status and build context
-   ```powershell
-   .\scripts\cortex-status.ps1
-   .\scripts\cortex-assemble.ps1 -Task "Your task description"
+   ```bash
+   python -m cli status
+   python -m cli assemble --task "Your task description"
    ```
 
 2. **During Session**: Query for specific knowledge
-   ```powershell
-   .\scripts\cortex-retrieve.ps1 -Query "relevant topic"
+   ```bash
+   python -m cli retrieve --query "relevant topic"
    ```
 
 3. **Session End**: Extract and save learnings
-   ```powershell
-   .\scripts\cortex-extract.ps1 -Text "Session notes"
+   ```bash
+   python -m cli extract --text "Session notes"
    ```
 
 ### Memory Types
@@ -192,15 +209,18 @@ VERY END               → Instructions
 
 ```
 your-project/
-├── .cortex/              # Cortex data (created by cortex-init)
+├── .cortex/              # Cortex data (created by init)
 │   ├── chunks/           # Chunked documents by domain
 │   │   └── AUTH/         # Domain-specific chunks
 │   ├── memories/         # Learnings from sessions
 │   └── index/            # Vector indices
 │       ├── chunks.pkl    # Chunk embeddings
 │       └── memories.pkl  # Memory embeddings
-├── scripts/              # PowerShell CLI tools
+├── cli/                  # Python CLI (cross-platform)
+│   ├── main.py           # Typer app entry point
+│   └── commands/         # Command implementations
 ├── core/                 # Python core modules
+├── scripts/              # PowerShell CLI (deprecated)
 ├── templates/            # Chunk/memory templates
 └── docs/                 # Documentation
 ```
@@ -221,13 +241,19 @@ Environment variables (all optional, defaults work out of the box):
 ## Requirements
 
 - Python 3.8+
-- PowerShell 5.1+ (Windows) or PowerShell Core (cross-platform)
 - ~200MB disk space (for embedding model)
 
-Dependencies installed automatically:
+Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+Dependencies:
 - `sentence-transformers` - Local embeddings
 - `numpy` - Vector operations
 - `tiktoken` - Token counting
+- `typer` - CLI framework
+- `rich` - Terminal formatting
 
 ## Documentation
 
@@ -239,4 +265,4 @@ Dependencies installed automatically:
 
 ---
 
-*Cortex v1.1.0 - LLM-Native Context Management*
+*Cortex v1.2.0 - LLM-Native Context Management*

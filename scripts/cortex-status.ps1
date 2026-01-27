@@ -19,6 +19,17 @@ param(
     [switch]$Json
 )
 
+# DEPRECATION WARNING (only show for non-JSON output)
+if (-not $Json) {
+    Write-Host ""
+    Write-Host "WARNING: This PowerShell script is DEPRECATED." -ForegroundColor Yellow
+    Write-Host "Use the cross-platform Python CLI instead:" -ForegroundColor Yellow
+    Write-Host "  python -m cli status" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "See scripts/README.md for migration guide." -ForegroundColor Gray
+    Write-Host ""
+}
+
 $ErrorActionPreference = "Stop"
 
 # Get script directory and project root

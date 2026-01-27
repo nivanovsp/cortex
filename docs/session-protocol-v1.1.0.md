@@ -164,7 +164,9 @@ Based on 200k context window:
 | On-demand retrieval (x2) | 3,000 | 1.5% |
 | **Max typical session** | 5,550 | **2.8%** |
 
-Leaves **97%+ context** for actual work.
+*Assumes 2 retrievals per session. Heavy debugging may reach 10-15%.*
+
+Leaves **90%+ context** for actual work.
 
 ---
 

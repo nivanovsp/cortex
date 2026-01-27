@@ -5,6 +5,57 @@ All notable changes to Cortex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-27
+
+### Added
+
+- **Cross-Platform Python CLI** - Replaces PowerShell scripts
+  - Works on Windows, Mac, and Linux
+  - Uses Typer framework with Rich terminal formatting
+  - Invoked via `python -m cli <command>`
+  - All 8 commands ported: init, chunk, index, retrieve, assemble, memory, extract, status
+
+- **Chunk Provenance Tracking** - Know where chunks came from
+  - `source_path` - Relative path to original source file
+  - `source_hash` - SHA256 hash for change detection
+  - Stale chunk detection in `status` command
+  - `--refresh` flag to update stale chunks
+
+- **Memory Retrieval Tracking** - Feedback loop for relevance
+  - Automatically increments `retrieval_count` when memory used
+  - Updates `last_retrieved` timestamp
+  - Frequency factor now works as intended in scoring
+
+- **New ADRs**
+  - ADR-011: Cross-Platform Python CLI
+  - ADR-012: Chunk Provenance Tracking
+  - ADR-013: Memory Retrieval Tracking
+  - ADR-014: Won't Implement - Semantic Deduplication
+  - ADR-015: Won't Implement - Memory Confidence Calibration
+  - ADR-016: Won't Implement - Query Refinement
+
+### Changed
+
+- **CLI Commands** - PowerShell → Python
+  - `.\cortex-chunk.ps1` → `python -m cli chunk`
+  - `.\cortex-status.ps1` → `python -m cli status`
+  - All commands follow same pattern
+
+- **Dependencies** - Added Typer and Rich to requirements.txt
+
+### Deprecated
+
+- **PowerShell Scripts** - Still present but deprecated
+  - Migration guide in `scripts/README.md`
+  - Will be removed in future version
+
+### Fixed
+
+- Memory frequency scoring now works (retrieval tracking implemented)
+- Chunk frontmatter includes provenance for traceability
+
+---
+
 ## [1.1.0] - 2026-01-26
 
 ### Added

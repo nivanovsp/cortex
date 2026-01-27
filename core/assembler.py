@@ -14,6 +14,7 @@ import tiktoken
 
 from .config import Config
 from .retriever import retrieve
+from .memory import increment_retrieval
 
 
 @dataclass
@@ -277,6 +278,7 @@ def assemble_context(
                         result['metadata'] = {}
                     result['metadata']['learning'] = content
                     memories.append(result)
+                    increment_retrieval(result['id'], project_root)
                     memories_tokens += content_tokens
     except FileNotFoundError:
         pass  # No memories index

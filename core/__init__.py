@@ -4,7 +4,7 @@ Cortex Core - LLM-Native Context Management
 Core modules for chunking, embedding, indexing, and retrieval.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 
 # Lazy imports to avoid circular dependencies
 from .config import Config
@@ -14,6 +14,9 @@ __all__ = [
     'Embedder',
     'chunk_document',
     'chunk_directory',
+    'get_stale_chunks',
+    'get_chunks_by_source',
+    'delete_chunks',
     'build_index',
     'load_index',
     'retrieve',
@@ -23,6 +26,7 @@ __all__ = [
     'update_memory',
     'delete_memory',
     'find_related_memories',
+    'increment_retrieval',
     'assemble_context',
     'assemble_and_render',
     'extract_memories',
@@ -42,6 +46,15 @@ def __getattr__(name):
     elif name == 'chunk_directory':
         from .chunker import chunk_directory
         return chunk_directory
+    elif name == 'get_stale_chunks':
+        from .chunker import get_stale_chunks
+        return get_stale_chunks
+    elif name == 'get_chunks_by_source':
+        from .chunker import get_chunks_by_source
+        return get_chunks_by_source
+    elif name == 'delete_chunks':
+        from .chunker import delete_chunks
+        return delete_chunks
     elif name == 'build_index':
         from .indexer import build_index
         return build_index
@@ -69,6 +82,9 @@ def __getattr__(name):
     elif name == 'find_related_memories':
         from .memory import find_related_memories
         return find_related_memories
+    elif name == 'increment_retrieval':
+        from .memory import increment_retrieval
+        return increment_retrieval
     elif name == 'assemble_context':
         from .assembler import assemble_context
         return assemble_context
