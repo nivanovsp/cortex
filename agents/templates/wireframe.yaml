@@ -1,0 +1,45 @@
+---
+template: wireframe
+version: "1.0"
+agent: ux-designer
+description: Wireframe specification with layout, components, and accessibility notes
+---
+
+# Wireframe: {screen-or-component-name}
+
+## User Goal
+{What the user is trying to accomplish on this screen.}
+
+## Layout
+{Describe the spatial arrangement of components. Top-to-bottom, left-to-right placement.}
+
+```
+{ASCII or text-based layout sketch}
+```
+
+## Components
+
+| Component | Purpose | States | Interactions |
+|-----------|---------|--------|--------------|
+| {component name} | {what it does} | {default, hover, active, disabled, error, etc.} | {click, type, drag, etc.} |
+| {component name} | {what it does} | {states} | {interactions} |
+
+## Annotations
+- {Behavioral note, e.g., form validates on blur}
+- {Behavioral note, e.g., list loads more on scroll}
+
+## Responsive Behavior
+
+### Mobile
+{Layout changes for small screens}
+
+### Tablet
+{Layout changes for medium screens}
+
+### Desktop
+{Layout at full width}
+
+## Accessibility Notes
+- {Keyboard navigation behavior}
+- {Screen reader considerations}
+- {Color contrast and focus indicators}

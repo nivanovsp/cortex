@@ -1,0 +1,35 @@
+---
+template: test-plan
+version: "1.0"
+agent: qa
+description: Test plan with test types, cases, data requirements, and coverage targets
+---
+
+# Test Plan: {feature-under-test}
+
+## Test Types
+
+| Type | Scope | Approach |
+|------|-------|----------|
+| {unit/integration/e2e/etc.} | {what it covers} | {how tests are structured} |
+
+## Coverage Targets
+- {What must be tested, e.g., all public API endpoints}
+- {Critical paths that require coverage}
+
+## Test Cases
+
+| ID | Description | Steps | Expected Result | Priority |
+|----|-------------|-------|-----------------|----------|
+| {TC-001} | {what is being tested} | {steps to execute} | {expected outcome} | {high/medium/low} |
+| {TC-002} | {what is being tested} | {steps to execute} | {expected outcome} | {priority} |
+
+## Test Data Requirements
+- {Data needed, e.g., seed database with sample users}
+- {Fixtures or mocks required}
+
+## Test Environments
+- {Environment description, e.g., local with SQLite, CI with PostgreSQL}
+
+## Risks and Mitigations
+- {Testing risk, e.g., flaky external API} — Mitigation: {e.g., use mocks}

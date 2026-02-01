@@ -1,0 +1,64 @@
+---
+template: api-spec
+version: "1.0"
+agent: architect
+description: API specification with endpoints, schemas, and error handling
+---
+
+# API Specification: {api-name}
+
+## Base URL
+`{base-url, e.g., /api/v1}`
+
+## Authentication
+**Method:** {auth method, e.g., Bearer token, API key, OAuth2}
+
+{Additional authentication details and token format.}
+
+## Endpoints
+
+### {endpoint-group-name}
+
+#### {HTTP-METHOD} {path}
+**Description:** {What this endpoint does}
+
+**Request:**
+```json
+{
+  "{field}": "{type} - {description}"
+}
+```
+
+**Response (200):**
+```json
+{
+  "{field}": "{type} - {description}"
+}
+```
+
+**Error Codes:**
+
+| Code | Description |
+|------|-------------|
+| {400} | {Bad request reason} |
+| {401} | {Unauthorized reason} |
+| {404} | {Not found reason} |
+
+---
+
+## Error Format
+
+All errors follow this structure:
+
+```json
+{
+  "error": {
+    "code": "{error-code}",
+    "message": "{human-readable message}",
+    "details": "{additional context, optional}"
+  }
+}
+```
+
+## Rate Limiting
+{Rate limiting policy, e.g., 100 requests per minute per client. Include headers used to communicate limits.}

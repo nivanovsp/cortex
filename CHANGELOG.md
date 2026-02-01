@@ -5,6 +5,70 @@ All notable changes to Cortex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-02-01
+
+### Added
+
+- **Complete Standalone Methodology** - Cortex is now a self-contained development methodology
+  - 6 specialist agents (Analyst, Architect, Developer, QA, UX Designer, Orchestrator)
+  - 29 workflow skills across all agents
+  - 6 phase validation checklists
+  - 14 artifact templates
+  - Bootstrap command for methodology resource indexing
+
+- **QA Agent** - Full quality assurance persona with dedicated skills
+  - `/modes:qa` - Test strategy, quality gates, acceptance review
+  - Skills: test-strategy, test-case-design, quality-gate, acceptance-review, accessibility-review
+
+- **Agent-Specific Rules** - Hard constraints baked into each agent
+  - Developer: verify library currency, no deprecated APIs
+  - Architect: validate against current LTS/stable releases
+  - Analyst: requirements must be unambiguous, clear, testable, measurable
+  - QA: test only against documented acceptance criteria
+  - All agents: no time estimates or duration predictions
+
+- **Decentralized Orchestration** - Any agent can be the entry point
+  - Topic-first activation: agent greets, user selects topic, then context loads
+  - Orchestrator is optional, not required as entry point
+  - Handoff skill stores phase transitions as retrievable memories
+
+- **Bootstrap Command** - `python -m cli bootstrap`
+  - Chunks agents/ directory into METHODOLOGY domain
+  - Makes skills, templates, checklists retrievable via semantic search
+  - `--force` flag for re-chunking
+
+- **Handoff Skill** - Structured phase transition protocol
+  - Stores as procedural memory with standardized keywords
+  - Next agent retrieves handoff context automatically
+
+- **Skills** (27 new)
+  - Orchestrator: project-plan, phase-decomposition, handoff, progress-review, risk-assessment
+  - Analyst: elicit-requirements, create-prd, gap-analysis, define-acceptance-criteria, stakeholder-analysis
+  - Architect: system-design, api-design, nfr-assessment, create-adr, tech-evaluation, security-review
+  - Developer: implementation-plan, code-review, debug-workflow, refactor-assessment
+  - QA: test-strategy, test-case-design, quality-gate, acceptance-review, accessibility-review
+  - UX Designer: wireframe, user-flow, design-system, usability-review
+
+- **Checklists** (6 new)
+  - phase-transition, requirements-complete, architecture-ready
+  - implementation-done, release-ready, ux-complete
+
+- **Templates** (14 new)
+  - project-brief, phase-plan, prd, requirements-spec
+  - architecture, api-spec, adr
+  - implementation-plan, code-review-report
+  - test-plan, qa-report
+  - wireframe, user-flow, design-system
+
+### Changed
+
+- **Session Protocol** - Updated to v2.0.0 with decentralized activation
+- **Mode Specs** - All 5 existing modes updated with Rules and Skills sections
+- **CLAUDE.md** - Full rewrite for v2.0.0 methodology
+- **README.md** - Updated for complete methodology
+
+---
+
 ## [1.3.0] - 2026-02-01
 
 ### Added

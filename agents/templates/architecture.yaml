@@ -1,0 +1,52 @@
+---
+template: architecture
+version: "1.0"
+agent: architect
+description: Architecture design document with options analysis and component diagrams
+---
+
+# Architecture: {system-or-component-name}
+
+## Context
+
+### Current State
+{Describe the current system state or starting point.}
+
+### Constraints
+- {Constraint that shapes the design}
+- {Constraint that shapes the design}
+
+## Options Considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| {option A} | {advantages} | {disadvantages} |
+| {option B} | {advantages} | {disadvantages} |
+| {option C} | {advantages} | {disadvantages} |
+
+## Recommendation
+**Chosen option:** {option name}
+
+**Rationale:** {Why this option best fits the constraints and goals.}
+
+## Component Diagram
+```
+{Text-based component diagram showing major components and their relationships}
+```
+
+## Data Flow
+```
+{Text-based diagram showing how data moves through the system}
+```
+
+## API Contracts
+
+| Endpoint | Method | Description | Input | Output |
+|----------|--------|-------------|-------|--------|
+| {path} | {GET/POST/etc.} | {what it does} | {key params} | {response shape} |
+
+## Risks
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|------------|
+| {risk} | {high/medium/low} | {high/medium/low} | {mitigation strategy} |

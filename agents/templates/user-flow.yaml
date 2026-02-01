@@ -1,0 +1,50 @@
+---
+template: user-flow
+version: "1.0"
+agent: ux-designer
+description: User flow with steps, error paths, and edge case handling
+---
+
+# User Flow: {flow-name}
+
+## Actor
+{User type or persona}
+
+## Goal
+{What the user wants to accomplish}
+
+## Preconditions
+- {What must be true before this flow starts}
+- {Required state or access}
+
+## Steps
+
+1. **User action:** {what the user does}
+   **System response:** {what the system does in response}
+
+2. **User action:** {what the user does}
+   **System response:** {what the system does in response}
+
+3. **User action:** {what the user does}
+   **System response:** {what the system does in response}
+
+## Error Paths
+
+### Step {N}: {error scenario}
+- **What goes wrong:** {description}
+- **System response:** {how the system handles it, e.g., error message, retry option}
+
+### Step {N}: {error scenario}
+- **What goes wrong:** {description}
+- **System response:** {how the system handles it}
+
+## Edge Cases
+
+| Scenario | Handling |
+|----------|----------|
+| {edge case} | {how it's handled} |
+| {edge case} | {how it's handled} |
+
+## Post-conditions
+- {What is true after the flow completes successfully}
+- {State changes, data created, notifications sent}

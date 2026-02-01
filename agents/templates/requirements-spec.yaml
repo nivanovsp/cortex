@@ -1,0 +1,40 @@
+---
+template: requirements-spec
+version: "1.0"
+agent: analyst
+description: Detailed requirements specification with priorities and edge cases
+---
+
+# Requirements Specification: {feature-name}
+
+## Functional Requirements
+
+| ID | Requirement | Priority | Acceptance Criteria |
+|----|-------------|----------|---------------------|
+| {FR-001} | {description} | {must/should/could} | {how to verify} |
+| {FR-002} | {description} | {must/should/could} | {how to verify} |
+
+## Non-Functional Requirements
+
+| ID | Category | Requirement | Target |
+|----|----------|-------------|--------|
+| {NFR-001} | {performance/security/usability/etc.} | {description} | {measurable target} |
+| {NFR-002} | {category} | {description} | {measurable target} |
+
+## Edge Cases
+
+| Scenario | Expected Behavior |
+|----------|-------------------|
+| {edge case description} | {what the system should do} |
+| {edge case description} | {what the system should do} |
+
+## Dependencies
+
+| Dependency | Status | Impact |
+|------------|--------|--------|
+| {external system or component} | {available/pending/blocked} | {what happens if unavailable} |
+
+## Assumptions
+- {assumption} — **verified** / **unverified**
+- {assumption} — **verified** / **unverified**
+- {assumption} — **verified** / **unverified**

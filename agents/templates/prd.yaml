@@ -1,0 +1,54 @@
+---
+template: prd
+version: "1.0"
+agent: analyst
+description: Product requirements document with user stories and acceptance criteria
+---
+
+# PRD: {product-name}
+
+## Overview
+{Brief description of the product or feature.}
+
+## Problem Statement
+{What problem does this solve? Who has this problem? Why does it matter?}
+
+## User Stories
+
+| As a | I want | So that |
+|------|--------|---------|
+| {user type} | {capability} | {benefit} |
+| {user type} | {capability} | {benefit} |
+
+## Functional Requirements
+
+1. **{FR-001}**: {Requirement description}
+2. **{FR-002}**: {Requirement description}
+3. **{FR-003}**: {Requirement description}
+
+## Non-Functional Requirements
+
+1. **{NFR-001}**: {Category} - {Requirement with measurable target, e.g., response time < 200ms}
+2. **{NFR-002}**: {Category} - {Requirement with measurable target}
+
+## Acceptance Criteria
+
+### FR-001: {requirement name}
+- **Given** {precondition}
+- **When** {action}
+- **Then** {expected result}
+
+### FR-002: {requirement name}
+- **Given** {precondition}
+- **When** {action}
+- **Then** {expected result}
+
+## Constraints
+- {Technical, business, or regulatory constraint}
+
+## Dependencies
+- {External system, API, or team dependency}
+
+## Open Questions
+- {Unresolved question that needs stakeholder input}
+- {Unresolved question that needs research}

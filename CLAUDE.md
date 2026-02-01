@@ -8,19 +8,32 @@
 
 ## Project Overview
 
-**Cortex** is an LLM-native context management system. It optimizes how documentation and learnings are stored, retrieved, and assembled for LLM consumption.
+**Cortex** is a complete, self-contained software development methodology with LLM-native context management. It provides expert agents, structured skills, templates, and semantic retrieval — everything needed to go from requirements to delivered software.
 
-**Version:** 1.2.0
+**Version:** 2.0.0
 
 ---
 
-## Session Protocol (v1.2.0)
+## Session Protocol (v2.0.0)
 
-This protocol defines how you (the agent) interact with Cortex throughout a session. Follow these instructions automatically — users should not need to know about scripts.
+This protocol defines how you (the agent) interact with Cortex throughout a session. Follow these instructions automatically — users should not need to know about commands.
 
-### On Session Start (Automatic)
+### Agent Activation (Decentralized)
 
-When the conversation begins:
+**Any agent can be the entry point.** There is no required starting agent. Every agent follows the same activation flow:
+
+1. Load mode spec (~2KB — persona, rules, skills list)
+2. Run `python -m cli status --json` silently — note metadata
+3. Greet the user as your persona — state what you can do
+4. **Wait for the user to select a topic/task**
+5. THEN retrieve handoffs, artifacts, and learnings for that topic
+6. Begin work with relevant context
+
+**Do NOT pre-load content or retrieve context before the user selects a topic.**
+
+### On Session Start (Automatic — No Mode)
+
+When the conversation begins without a mode activation:
 
 1. Run `python -m cli status --json` silently
 2. Note the result internally (chunk count, memory count, domains, stale chunks)
@@ -102,9 +115,10 @@ When the user explicitly requests learning extraction, detect phrases like:
 ### Important Rules
 
 1. **Never pre-load content files** — use retrieval only
-2. **Scripts are invisible to users** — they interact through natural language
+2. **Commands are invisible to users** — they interact through natural language
 3. **Session end requires user trigger** — never auto-extract learnings
 4. **When uncertain, use explicit trigger** — "cortex: {query}" always works
+5. **No time estimates** — no agent produces duration predictions or timeline estimates
 
 ---
 
@@ -124,9 +138,14 @@ Cortex/
 ├── cli/                  # Python CLI (cross-platform)
 │   ├── main.py           # Typer app entry point
 │   └── commands/         # Command implementations
+├── agents/               # Methodology resources (tool-agnostic)
+│   ├── modes/            # Agent personas (6)
+│   ├── skills/           # Workflow skills (29)
+│   ├── checklists/       # Phase validation checklists (6)
+│   └── templates/        # Artifact templates (14)
 ├── scripts/              # PowerShell CLI (deprecated)
 ├── docs/                 # Documentation
-├── templates/            # Chunk/memory templates
+├── templates/            # Chunk/memory format templates
 └── .cortex/              # Runtime data (chunks, memories, indices)
 ```
 
@@ -141,6 +160,7 @@ Cortex/
 - `DB` - Database, queries, migrations
 - `TEST` - Testing, fixtures, mocks
 - `DEV` - Build, deploy, tooling
+- `METHODOLOGY` - Cortex skills, templates, checklists (bootstrapped)
 - `GENERAL` - Everything else
 
 ### Memory Types
@@ -190,47 +210,80 @@ These commands are called automatically by the session protocol. Users should no
 | `python -m cli index` | Rebuild indices | After saving memories |
 | `python -m cli memory add --learning "..."` | Add memory manually | Explicit request |
 | `python -m cli init` | Initialize Cortex | Project setup |
+| `python -m cli bootstrap` | Chunk methodology into Cortex | After init or adding agents |
 | `python -m cli chunk --path "..."` | Chunk documents | Adding new docs |
 | `python -m cli chunk --path "..." --refresh` | Re-chunk modified files | Stale chunks detected |
 
 ---
 
-## Agent Modes
+## Agent System (v2.0.0)
 
-Cortex includes agent modes — expert personas that layer on top of the session protocol. See `agents/README.md` for full details.
+Cortex ships with a complete agent system — expert personas with dedicated skills, templates, and quality checklists. See `agents/README.md` for full details.
 
-### Available Modes
+### Available Agents
 
-| Mode | Activation | Focus |
-|------|-----------|-------|
-| Analyst | `/modes:analyst` | Requirements, gap analysis |
-| Architect | `/modes:architect` | System design, trade-offs, ADRs |
-| Developer | `/modes:developer` | Implementation, debugging, review |
-| UX Designer | `/modes:ux-designer` | Interface design, accessibility |
-| Orchestrator | `/modes:orchestrator` | Work planning, phase coordination |
+| Agent | Activation | Focus |
+|-------|-----------|-------|
+| Analyst | `/modes:analyst` | Requirements, gap analysis, acceptance criteria |
+| Architect | `/modes:architect` | System design, trade-offs, ADRs, NFRs |
+| Developer | `/modes:developer` | Implementation, debugging, code review |
+| QA | `/modes:qa` | Test strategy, quality gates, acceptance review |
+| UX Designer | `/modes:ux-designer` | Interface design, accessibility, user flows |
+| Orchestrator | `/modes:orchestrator` | Work planning, phase coordination, handoffs |
 
 ### Available Skills
 
-| Skill | Activation | Purpose |
-|-------|-----------|---------|
-| QA Gate | `/skills:qa-gate` | Quality validation checklist |
-| Extract Learnings | `/skills:extract-learnings` | Session learning extraction |
+| Skill | Activation | Agent |
+|-------|-----------|-------|
+| QA Gate | `/skills:qa-gate` | QA |
+| Extract Learnings | `/skills:extract-learnings` | Any |
+| Handoff | `/skills:handoff` | Orchestrator |
+| Project Plan | `/skills:project-plan` | Orchestrator |
+| Create PRD | `/skills:create-prd` | Analyst |
+| System Design | `/skills:system-design` | Architect |
+| Code Review | `/skills:code-review` | Developer |
+| Test Strategy | `/skills:test-strategy` | QA |
+| *(29 total — see agents/README.md)* | | |
 
-### How Modes Work
+### Available Checklists
 
-- Modes are **Layer 1** on top of the session protocol (Layer 0)
-- The session protocol continues running (status, assemble, retrieve, extract)
-- The mode adds persona-specific behavior, domain focus, and specialized commands
-- All modes support `*help`, `*exit`, and `*context` commands
-- Specs live in `agents/modes/` (tool-agnostic) with thin wrappers in `.claude/commands/modes/` (Claude Code)
+| Checklist | Activation | Agent |
+|-----------|-----------|-------|
+| Phase Transition | `/checklists:phase-transition` | Orchestrator |
+| Requirements Complete | `/checklists:requirements-complete` | Analyst |
+| Architecture Ready | `/checklists:architecture-ready` | Architect |
+| Implementation Done | `/checklists:implementation-done` | Developer |
+| Release Ready | `/checklists:release-ready` | QA |
+| UX Complete | `/checklists:ux-complete` | UX Designer |
 
-### When to Suggest Modes
+### How the Agent System Works
 
-- If the user's task involves requirements analysis → suggest `/modes:analyst`
-- If the task involves system design or architectural decisions → suggest `/modes:architect`
-- If the task involves UI/interaction design → suggest `/modes:ux-designer`
-- If the task is complex with multiple phases → suggest `/modes:orchestrator`
-- For implementation work, the default session protocol is usually sufficient; suggest `/modes:developer` only if the user wants the full structured workflow
+- **Layer 0:** Session Protocol (always active — status, assemble, retrieve, extract)
+- **Layer 1:** Agent Mode (optional — adds persona, rules, domain focus, skills)
+- **Any agent can start first** — no required entry point
+- **Agents retrieve skills on-demand** from Cortex (domain: METHODOLOGY)
+- **Handoffs** are stored as memories, retrievable by the next agent
+- All agents support `*help`, `*exit`, and `*context` commands
+- Specs live in `agents/` (tool-agnostic) with thin wrappers in `.claude/commands/`
+
+### When to Suggest Agents
+
+- Requirements analysis → `/modes:analyst`
+- System design or architectural decisions → `/modes:architect`
+- Implementation, debugging, code review → `/modes:developer`
+- Testing strategy, quality validation → `/modes:qa`
+- UI/interaction design → `/modes:ux-designer`
+- Complex multi-phase coordination → `/modes:orchestrator`
+
+### Bootstrap
+
+After adding or modifying agents/skills/templates, run bootstrap to make them retrievable:
+
+```bash
+python -m cli bootstrap          # Chunk agents/ into METHODOLOGY domain
+python -m cli bootstrap --force  # Re-chunk (delete old + create new)
+python -m cli index              # Rebuild indices
+```
 
 ---
 
@@ -243,3 +296,4 @@ Cortex includes agent modes — expert personas that layer on top of the session
 - **Position Optimization**: Critical info placed at start/end (primacy/recency zones)
 - **Local Embeddings**: e5-small-v2 runs locally, no API costs
 - **Cross-Platform**: Python CLI works on Windows, Mac, and Linux
+- **No Time Estimates**: No agent produces duration predictions or timelines

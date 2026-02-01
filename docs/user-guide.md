@@ -2,13 +2,13 @@
 
 A comprehensive guide to using Cortex for LLM-native context management.
 
-**Version:** 1.3.0
+**Version:** 2.0.0
 
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
 2. [Natural Language Usage](#natural-language-usage)
-3. [Agent Modes](#agent-modes) **(New in v1.3.0)**
+3. [Agent System](#agent-system) **(Updated in v2.0.0)**
 4. [Document Management](#document-management)
 5. [Stale Chunk Detection](#stale-chunk-detection)
 6. [Memory System](#memory-system)
@@ -117,21 +117,31 @@ The agent will:
 
 ---
 
-## Agent Modes
+## Agent System
 
-**(New in v1.3.0)** Cortex includes specialist agent modes that provide expert personas for different types of work.
+**(Updated in v2.0.0)** Cortex is a complete software development methodology with 6 specialist agents, each with dedicated skills, templates, and a quality checklist.
 
-### Available Modes
+### Available Agents
 
-| Mode | What It Does | Activate |
-|------|-------------|----------|
+| Agent | What It Does | Activate |
+|-------|-------------|----------|
 | **Analyst** | Requirements analysis, gap identification, acceptance criteria | `/modes:analyst` |
-| **Architect** | System design, trade-off analysis, ADRs | `/modes:architect` |
+| **Architect** | System design, trade-off analysis, ADRs, NFRs | `/modes:architect` |
 | **Developer** | Implementation, debugging, code review | `/modes:developer` |
+| **QA** | Test strategy, quality gates, acceptance review | `/modes:qa` |
 | **UX Designer** | Interface design, accessibility, user flows | `/modes:ux-designer` |
-| **Orchestrator** | Work planning, phase coordination | `/modes:orchestrator` |
+| **Orchestrator** | Work planning, phase coordination, handoffs | `/modes:orchestrator` |
 
-### Using Modes
+### Any Agent Can Start First
+
+There is no required entry point. Start with whichever agent fits your task:
+
+- Have vague requirements? → `/modes:analyst`
+- Know what to build but not how? → `/modes:architect`
+- Ready to code? → `/modes:developer`
+- Need to validate? → `/modes:qa`
+
+### Using Agents
 
 **With Claude Code:**
 ```
@@ -143,49 +153,71 @@ The agent will:
 Read agents/modes/architect.md and adopt that persona fully.
 ```
 
-### How Modes Work
+### How Agents Work
 
-Modes add a specialist lens on top of the normal session protocol:
+Agents add a specialist lens on top of the normal session protocol:
 
 ```
-Without mode:
-  You talk → Agent uses Cortex → Answers generically
+Without agent:
+  You talk → Cortex retrieves context → Generic answer
 
 With /modes:architect:
-  You talk → Agent uses Cortex → Answers as architect
-  (design focus, trade-off analysis, structured output)
+  You talk → Cortex retrieves context → Architect answer
+  (design focus, trade-offs, rules enforced)
 ```
 
-The session protocol (auto status, auto assemble, auto retrieve) still runs. The mode just changes how the agent interprets and presents information.
+Each agent has:
+- **Rules** — Hard constraints (e.g., Developer must verify library versions are current)
+- **Skills** — Invoke via `/skills:{name}` for structured workflows
+- **Templates** — Produce standardized artifacts
+- **Checklist** — Validate before concluding work
 
-### Mode Commands
+### Skills (29 total)
 
-All modes support:
-- `*help` — See mode-specific commands
-- `*exit` — Leave the mode
-- `*context` — Show Cortex context summary
+Skills are one-shot workflows. Invoke with `/skills:{name}`:
 
-Each mode also has specific commands (e.g., `*design`, `*analyze`, `*flow`). Use `*help` after activating a mode to see them.
+| Agent | Skills Available |
+|-------|-----------------|
+| Orchestrator | project-plan, phase-decomposition, handoff, progress-review, risk-assessment |
+| Analyst | elicit-requirements, create-prd, gap-analysis, define-acceptance-criteria, stakeholder-analysis |
+| Architect | system-design, api-design, nfr-assessment, create-adr, tech-evaluation, security-review |
+| Developer | implementation-plan, code-review, debug-workflow, refactor-assessment |
+| QA | test-strategy, test-case-design, quality-gate, acceptance-review, accessibility-review |
+| UX Designer | wireframe, user-flow, design-system, usability-review |
+| Shared | qa-gate, extract-learnings |
 
-### Workflow Skills
+### Checklists
 
-Skills are one-shot workflows (not persistent personas):
+Run before concluding a phase: `/checklists:{name}`
 
-| Skill | What It Does | Activate |
-|-------|-------------|----------|
-| **QA Gate** | Quality validation checklist | `/skills:qa-gate` |
-| **Extract Learnings** | Guided learning extraction | `/skills:extract-learnings` |
+| Checklist | Agent | Purpose |
+|-----------|-------|---------|
+| phase-transition | Orchestrator | Verify deliverables before moving on |
+| requirements-complete | Analyst | Validate requirements are complete and clear |
+| architecture-ready | Architect | Confirm design is ready for implementation |
+| implementation-done | Developer | Verify code is complete and tested |
+| release-ready | QA | Final quality validation |
+| ux-complete | UX Designer | Confirm UX deliverables |
 
-### Recommended Workflow for Complex Tasks
+### Example Workflows
 
-For multi-phase work, start with the Orchestrator:
-
+**With Orchestrator:**
 ```
-1. /modes:orchestrator     → Get a phased plan
-2. /modes:analyst          → Phase 1: Clarify requirements
-3. /modes:architect        → Phase 2: Design solution
-4. /modes:developer        → Phase 3: Implement
-5. /skills:qa-gate         → Phase 4: Validate quality
+1. /modes:orchestrator     → Produce phased plan
+2. /skills:handoff         → Transition to next phase
+3. /modes:analyst          → Clarify requirements
+4. /skills:handoff         → Transition
+5. /modes:architect        → Design solution
+6. /modes:developer        → Implement
+7. /modes:qa               → Validate quality
+```
+
+**Self-Orchestrated:**
+```
+1. /modes:analyst          → Start with requirements
+2. /modes:architect        → Design solution
+3. /modes:developer        → Implement
+4. /skills:qa-gate         → Quick quality check
 ```
 
 ---

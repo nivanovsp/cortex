@@ -1,0 +1,40 @@
+---
+template: qa-report
+version: "1.0"
+agent: qa
+description: QA results report with test summary, defects, and release recommendation
+---
+
+# QA Report: {feature-tested}
+
+## Test Summary
+
+| Category | Total | Passed | Failed | Skipped |
+|----------|-------|--------|--------|---------|
+| {test category} | {n} | {n} | {n} | {n} |
+
+## Acceptance Criteria Results
+
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| {acceptance criterion} | {pass/fail} | {test ID or observation} |
+
+## Defects Found
+
+| ID | Severity | Requirement Ref | Description | Steps to Reproduce |
+|----|----------|-----------------|-------------|--------------------|
+| {DEF-001} | {critical/major/minor} | {FR/NFR ID} | {description} | {reproduction steps} |
+
+## Coverage Assessment
+
+### Tested
+- {What was covered}
+
+### Not Tested
+- {What was not covered and why}
+
+### Risk
+- {Risk from gaps in coverage}
+
+## Recommendation
+{release / fix and retest / block release — with justification}

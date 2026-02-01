@@ -1,0 +1,36 @@
+---
+template: implementation-plan
+version: "1.0"
+agent: developer
+description: Step-by-step implementation plan with files, dependencies, and verification
+---
+
+# Implementation Plan: {task-name}
+
+## Overview
+{What we're implementing and why. Link to relevant requirements or architecture decisions.}
+
+## Steps
+
+1. **{Step description}**
+   - Files: {files to modify or create}
+   - Verification: {how to confirm this step is correct}
+
+2. **{Step description}**
+   - Files: {files to modify or create}
+   - Verification: {how to confirm this step is correct}
+
+3. **{Step description}**
+   - Files: {files to modify or create}
+   - Verification: {how to confirm this step is correct}
+
+## Dependencies
+- {What must exist before implementation starts}
+- {Libraries, APIs, or modules required}
+
+## Risks
+- {What could go wrong during implementation}
+- {Potential side effects on existing functionality}
+
+## Verification Strategy
+{How to confirm the full implementation is correct. Include test commands, manual checks, or review steps.}

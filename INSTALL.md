@@ -1,6 +1,6 @@
 # Cortex Installation Guide
 
-**Version:** 1.3.0
+**Version:** 2.0.0
 
 ## Prerequisites
 
@@ -73,15 +73,24 @@ This enables:
 - User-triggered learning extraction ("Update learning")
 - Agent mode references (see Step 5)
 
-### Step 5: Agent Modes (Included)
+### Step 5: Agent System (Included)
 
-Agent modes are bundled with Cortex and work immediately:
+Cortex v2.0.0 ships with a complete methodology — 6 agents, 29 skills, 14 templates, 6 checklists.
+
+**Bootstrap methodology resources (optional but recommended):**
+```bash
+python -m cli bootstrap
+python -m cli index
+```
+
+This chunks methodology resources into Cortex for on-demand retrieval by agents.
 
 **With Claude Code:**
 ```
-/modes:architect
 /modes:analyst
+/modes:architect
 /modes:developer
+/modes:qa
 /modes:ux-designer
 /modes:orchestrator
 ```
@@ -157,6 +166,7 @@ python -m cli index
 | `python -m cli memory add --learning X` | Add a memory |
 | `python -m cli memory list` | List memories |
 | `python -m cli extract --text X` | Extract learnings |
+| `python -m cli bootstrap` | Chunk methodology into Cortex |
 
 ## Troubleshooting
 
@@ -210,13 +220,15 @@ rm -rf cortex/
 
 To remove from global Claude Code rules, edit `~/.claude/CLAUDE.md` and remove the "Cortex Context Management" section.
 
-## Migrating from v1.2.0
+## Migrating from v1.3.0
 
-If upgrading from v1.2.0:
+If upgrading from v1.3.0:
 
 1. Pull latest: `git pull origin main`
-2. Agent modes are available immediately — no extra setup
-3. Optionally update global CLAUDE.md with agent modes reference
+2. New QA agent, 29 skills, checklists, and templates are available immediately
+3. Run bootstrap to index methodology: `python -m cli bootstrap && python -m cli index`
+4. All existing agents updated with Rules and Skills sections
+5. Optionally update global CLAUDE.md with v2.0.0 references
 
 ---
 

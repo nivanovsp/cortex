@@ -1,7 +1,7 @@
 # Cortex: LLM-Native Context Management
 
 **Status**: Specification
-**Version**: 1.3.0
+**Version**: 2.0.0
 **Date**: 2026-02-01
 **Author**: Claude (Architect Mode)
 
@@ -15,6 +15,7 @@
 - **Semantic retrieval** - Relevant content found via embedding similarity, not predefined links
 - **Minimal context consumption** - Only load what's needed for the current task
 - **Markdown-native format** - Optimized for LLM reasoning (2-5% overhead vs 8-12% for YAML)
+- **Complete methodology** - 6 agents with dedicated skills, templates, and checklists
 
 **Expected Outcome:** ~8% context consumption at task start vs 35-60% with traditional approaches.
 
@@ -30,7 +31,7 @@
 6. [Risk Assessment](#6-risk-assessment)
 7. [Technical Decisions](#7-technical-decisions)
 8. [Session Protocol](#8-session-protocol-v110)
-9. [Agent Orchestration Layer](#9-agent-orchestration-layer-v130)
+9. [Complete Methodology](#9-complete-methodology-v200)
 
 ---
 
@@ -718,6 +719,7 @@ retrieval_count: 0
 | `python -m cli extract --text <text>` | Extract learnings |
 | `python -m cli status` | Show status and stale chunks |
 | `python -m cli status --json` | JSON output for automation |
+| `python -m cli bootstrap` | Chunk methodology into Cortex |
 
 ---
 
@@ -821,92 +823,70 @@ The `--refresh` flag:
 
 ---
 
-## 9. Agent Orchestration Layer (v1.3.0)
+## 9. Complete Methodology (v2.0.0)
 
 ### 9.1 Overview
 
-Cortex v1.3.0 adds an agent orchestration layer — expert modes that provide specialist personas on top of the core context management system.
+Cortex v2.0.0 is a complete, self-contained software development methodology. It provides 6 specialist agents, 29 workflow skills, 14 artifact templates, and 6 quality checklists — all retrievable through Cortex's own semantic search.
 
 **Design Principles:**
-1. **Additive** — Modes layer on top; the session protocol (Layer 0) always runs
-2. **Tool-agnostic** — Specs in `agents/` work with any LLM tool
-3. **Zero context cost** — Modes don't consume Cortex retrieval budget
-4. **Single-source** — One spec per agent; Claude Code wrappers are thin references
+1. **Decentralized** — Any agent can be the entry point; no required starting agent
+2. **Additive** — Modes layer on top; the session protocol (Layer 0) always runs
+3. **Self-indexing** — Methodology resources chunked into Cortex (METHODOLOGY domain)
+4. **Tool-agnostic** — Specs in `agents/` work with any LLM tool
+5. **Agent-specific rules** — Hard constraints baked into each agent persona
+6. **No time estimates** — No agent produces duration predictions or timelines
 
-### 9.2 Two-Layer Architecture
+### 9.2 Agent System
 
-```
-Layer 0: Session Protocol (always active)
-  status → assemble → retrieve → extract
+| Agent | Focus | Skills | Templates | Checklist |
+|-------|-------|--------|-----------|-----------|
+| Analyst | Requirements, gaps, acceptance criteria | 5 | 2 | requirements-complete |
+| Architect | System design, trade-offs, ADRs | 6 | 3 | architecture-ready |
+| Developer | Implementation, debugging, review | 4 | 2 | implementation-done |
+| QA | Test strategy, quality gates | 5 | 2 | release-ready |
+| UX Designer | Interface design, accessibility | 4 | 3 | ux-complete |
+| Orchestrator | Work planning, handoffs | 5 | 2 | phase-transition |
 
-Layer 1: Agent Mode (optional, user-activated)
-  persona + domain focus + specialized commands + structured output
-```
+### 9.3 Decentralized Activation
 
-When a mode is active, it adds persona-specific interpretation without changing the underlying protocol.
+Every agent follows the same activation flow:
+1. Load mode spec (~2KB — persona, rules, skills list)
+2. Run status — see what's in Cortex
+3. Greet as persona — state capabilities
+4. User selects topic/task
+5. Retrieve handoffs, artifacts, learnings for that topic
+6. Begin work with relevant context
 
-### 9.3 Agent Modes
+### 9.4 Handoff Protocol
 
-| Mode | Focus | Primary Domains | Key Output |
-|------|-------|----------------|------------|
-| Analyst | Requirements, gaps | GENERAL, API, DB | Gap analyses, acceptance criteria |
-| Architect | System design | API, DB, DEV | Design docs, ADRs |
-| Developer | Implementation | All | Code, tests, fixes |
-| UX Designer | Interface design | UI | Component specs, user flows |
-| Orchestrator | Work planning | All | Phased work plans |
+Phase transitions use the handoff skill (Orchestrator-owned) which stores a procedural memory with standardized keywords. The next agent retrieves this context automatically.
 
-### 9.4 Workflow Skills
+### 9.5 Bootstrap
 
-| Skill | Purpose | Output |
-|-------|---------|--------|
-| QA Gate | Quality validation | PASS/FAIL report |
-| Extract Learnings | Learning extraction | Classified memories for approval |
-
-### 9.5 Orchestrator Coordination
-
-The Orchestrator is a planning mode. It produces phased work plans where each phase names a specialist mode. The user activates modes sequentially.
-
-```
-Orchestrator output:
-  Phase 1: /modes:analyst    → Clarify requirements
-  Phase 2: /modes:architect  → Design solution
-  Phase 3: /modes:developer  → Implement
-  Phase 4: /skills:qa-gate   → Validate
+Methodology resources are self-indexed via bootstrap:
+```bash
+python -m cli bootstrap     # Chunk agents/ into METHODOLOGY domain
+python -m cli index         # Rebuild indices
 ```
 
 ### 9.6 File Structure
 
 ```
-agents/                              # Source of truth (tool-agnostic)
-├── README.md
-├── modes/*.md                       # 5 specialist personas
-└── skills/*.md                      # 2 workflow skills
-
-.claude/commands/                    # Claude Code wrappers (~4 lines each)
-├── modes/*.md                       # "Read agents/modes/{name}.md, adopt persona"
-└── skills/*.md                      # "Read agents/skills/{name}.md, execute skill"
+agents/
+├── modes/          # 6 agent personas with rules and skills lists
+├── skills/         # 29 workflow skills + 2 shared
+├── checklists/     # 6 phase validation checklists
+└── templates/      # 14 artifact templates (YAML)
 ```
 
-### 9.7 Mode Activation
+### 9.7 Universal Commands
 
-**Claude Code:**
-```
-/modes:architect
-```
-
-**Other LLM tools:**
-```
-Read agents/modes/architect.md and adopt that persona fully.
-Follow all instructions for the remainder of this conversation.
-```
-
-### 9.8 Universal Mode Commands
-
-All modes support:
+All agents support:
 - `*help` — Show mode-specific commands
 - `*exit` — Leave the current mode
 - `*context` — Show gathered Cortex context summary
 
 ---
 
-*Cortex v1.3.0 - LLM-Native Context Management*
+*Cortex v2.0.0 - Complete Software Development Methodology*

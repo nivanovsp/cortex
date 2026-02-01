@@ -1,0 +1,54 @@
+---
+template: project-brief
+version: "1.0"
+agent: orchestrator
+description: High-level project definition with goals, scope, and stakeholders
+---
+
+# Project Brief: {project-name}
+
+## Overview
+
+### Problem Statement
+{Describe the problem this project addresses. What pain exists today?}
+
+### Proposed Solution
+{High-level description of what will be built or changed to solve the problem.}
+
+## Goals
+- {Measurable goal 1}
+- {Measurable goal 2}
+- {Measurable goal 3}
+
+## Scope
+
+### In Scope
+- {Feature or work item included}
+- {Feature or work item included}
+
+### Out of Scope
+- {Explicitly excluded item}
+- {Explicitly excluded item}
+
+## Constraints
+
+### Technical
+- {Technical constraint, e.g., must run on existing infrastructure}
+
+### Business
+- {Business constraint, e.g., must comply with regulation X}
+
+### Resource
+- {Resource constraint, e.g., single developer available}
+
+## Success Criteria
+- {How we know the project is done and successful}
+- {Measurable outcome}
+- {Measurable outcome}
+
+## Stakeholders
+
+| Name | Role | Interest |
+|------|------|----------|
+| {name} | {role} | {what they care about} |
+| {name} | {role} | {what they care about} |

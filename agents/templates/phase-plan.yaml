@@ -1,0 +1,38 @@
+---
+template: phase-plan
+version: "1.0"
+agent: orchestrator
+description: Detailed plan for a single project phase with entry/exit criteria
+---
+
+# Phase Plan: {phase-name}
+
+## Objective
+{What this phase achieves. One clear statement.}
+
+## Agent Assignment
+{Which agent mode owns this phase, e.g., Analyst, Architect, Developer, QA, UX Designer}
+
+## Entry Criteria
+- {What must be true before this phase can start}
+- {Required inputs or prerequisites}
+
+## Deliverables
+- {Concrete output 1, e.g., PRD document}
+- {Concrete output 2, e.g., approved architecture}
+- {Concrete output 3}
+
+## Exit Criteria
+- {What must be true for this phase to be considered complete}
+- {Quality gates that must pass}
+
+## Dependencies
+- {What this phase depends on, e.g., Phase 1 deliverables}
+- {External dependencies}
+
+## Risks
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| {risk description} | {high/medium/low} | {how to reduce or handle} |
+| {risk description} | {high/medium/low} | {how to reduce or handle} |

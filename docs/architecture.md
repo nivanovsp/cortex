@@ -1,6 +1,6 @@
 # Cortex Architecture
 
-**Version:** 1.3.0
+**Version:** 2.0.0
 
 ## Overview
 
@@ -10,13 +10,13 @@ Cortex is an LLM-native context management system built on the principle that LL
 - **Semantic retrieval** - Content found via embedding similarity, not manual links
 - **Minimal context consumption** - Only load what's needed for the current task
 - **Content freshness** - Track source changes and detect stale chunks (v1.2.0)
-- **Agent orchestration** - Specialist modes layered on top of the core system (v1.3.0)
+- **Complete methodology** - 6 agents, 29 skills, 14 templates, 6 checklists with decentralized orchestration (v2.0.0)
 
 ## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         CORTEX SYSTEM (v1.3.0)                       │
+│                         CORTEX SYSTEM (v2.0.0)                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  ┌────────────────────────────────────────────────────────────┐     │
@@ -360,7 +360,8 @@ cli/
     ├── assemble.py     # cortex assemble
     ├── memory.py       # cortex memory add/list/delete
     ├── extract.py      # cortex extract
-    └── status.py       # cortex status
+    ├── status.py       # cortex status
+    └── bootstrap.py    # cortex bootstrap
 ```
 
 ### Design Principles
@@ -472,27 +473,30 @@ The agent detects user intent through natural language patterns:
 
 ---
 
-## Agent Orchestration Layer (v1.3.0)
+## Agent Orchestration Layer (v2.0.0)
 
-Cortex v1.3.0 adds an agent orchestration layer — expert modes that layer on top of the session protocol.
+Cortex v2.0.0 provides a complete standalone methodology with decentralized agent orchestration.
 
 ### Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    AGENT ORCHESTRATION (v1.3.0)                       │
+│                    COMPLETE METHODOLOGY (v2.0.0)                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  ┌────────────────────────────────────────────────────────────┐     │
 │  │               LAYER 1: AGENT MODE (optional)               │     │
 │  │                                                            │     │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │     │
-│  │  │ Analyst  │ │ Architect│ │Developer │ │ UX       │    │     │
-│  │  │          │ │          │ │          │ │ Designer │    │     │
+│  │  │ Analyst  │ │ Architect│ │Developer │ │    QA    │    │     │
+│  │  │ 5 skills │ │ 6 skills │ │ 4 skills │ │ 5 skills │    │     │
 │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘    │     │
-│  │                    ┌──────────┐                           │     │
-│  │                    │Orchestr. │  (plans which mode next)  │     │
-│  │                    └──────────┘                           │     │
+│  │  ┌──────────┐ ┌──────────┐                               │     │
+│  │  │UX Design │ │Orchestr. │  Any agent can start first     │     │
+│  │  │ 4 skills │ │ 5 skills │  Handoff via Cortex memories   │     │
+│  │  └──────────┘ └──────────┘                               │     │
+│  │                                                            │     │
+│  │  + 6 Checklists  + 14 Templates  + 2 Shared Skills       │     │
 │  └────────────────────────────┬───────────────────────────────┘     │
 │                               │                                      │
 │                               ▼                                      │
@@ -513,43 +517,81 @@ Cortex v1.3.0 adds an agent orchestration layer — expert modes that layer on t
 
 ### Design Principles
 
+- **Decentralized** — Any agent can be the entry point; Orchestrator is optional
 - **Additive, not replacement** — Modes layer on top; the session protocol always runs
+- **Self-indexing** — Methodology resources chunked into Cortex (METHODOLOGY domain) via bootstrap
 - **Single-source specs** — Agent definitions in `agents/` are the source of truth
 - **Tool-agnostic** — Specs work with any LLM tool; Claude Code wrappers are thin
-- **Zero context cost** — Modes don't consume Cortex retrieval budget
-- **Planning, not spawning** — Orchestrator plans phases; user activates modes
+- **Agent-specific rules** — Hard constraints baked into each mode spec
+- **No time estimates** — No agent produces duration predictions or timelines
 
 ### File Structure
 
 ```
-agents/                              # Tool-agnostic specs (source of truth)
+agents/                              # Source of truth (tool-agnostic)
 ├── README.md
-├── modes/
+├── modes/                           # 6 specialist personas
 │   ├── analyst.md
 │   ├── architect.md
 │   ├── developer.md
+│   ├── qa.md
 │   ├── ux-designer.md
 │   └── orchestrator.md
-└── skills/
-    ├── qa-gate.md
-    └── extract-learnings.md
+├── skills/                          # 29 workflow skills + 2 shared
+│   ├── extract-learnings.md
+│   ├── qa-gate.md
+│   ├── handoff.md
+│   └── ... (29 total)
+├── checklists/                      # 6 phase validation checklists
+│   ├── phase-transition.md
+│   ├── requirements-complete.md
+│   └── ... (6 total)
+└── templates/                       # 14 artifact templates
+    ├── prd.yaml
+    ├── architecture.yaml
+    └── ... (14 total)
 
 .claude/commands/                    # Claude Code thin wrappers
-├── modes/{name}.md                  # "Read agents/modes/{name}.md, adopt persona"
-└── skills/{name}.md                 # "Read agents/skills/{name}.md, execute skill"
+├── modes/*.md
+├── skills/*.md
+└── checklists/*.md
+```
+
+### Decentralized Activation Flow
+
+Every agent follows the same activation:
+
+1. Load mode spec (~2KB — persona, rules, skills)
+2. Run status — see what's in Cortex
+3. Greet as persona
+4. User selects topic/task
+5. Retrieve handoffs, artifacts, learnings for that topic
+6. Begin work
+
+### Handoff Protocol
+
+Phase transitions use the handoff skill which stores a procedural memory with standardized keywords (`handoff`, `phase-transition`, agent name, topic). The next agent retrieves this automatically when the user selects the same topic.
+
+### Bootstrap
+
+Methodology resources are chunked into Cortex's own index:
+
+```bash
+python -m cli bootstrap          # Chunk agents/ into METHODOLOGY domain
+python -m cli bootstrap --force  # Re-chunk
+python -m cli index              # Rebuild indices
 ```
 
 ### Mode Interaction with Core
 
-Each mode specifies which Cortex commands and memory domains it prioritizes:
-
-| Mode | Primary Domains | Primary Commands |
-|------|----------------|-----------------|
-| Analyst | GENERAL, API, DB | retrieve, assemble |
-| Architect | API, DB, DEV | retrieve, assemble, memory add |
-| Developer | All | All commands |
-| UX Designer | UI | retrieve, assemble, memory add |
-| Orchestrator | All | retrieve, assemble, memory add |
+| Agent | Primary Domains | Skills | Templates | Checklist |
+|-------|----------------|--------|-----------|-----------|
+| Analyst | GENERAL, API, DB | 5 | 2 | requirements-complete |
+| Architect | API, DB, DEV | 6 | 3 | architecture-ready |
+| Developer | All | 4 | 2 | implementation-done |
+| QA | TEST | 5 | 2 | release-ready |
+| UX Designer | UI | 4 | 3 | ux-complete |
+| Orchestrator | All | 5 | 2 | phase-transition |
 
 ---
 
@@ -558,3 +600,5 @@ Each mode specifies which Cortex commands and memory domains it prioritizes:
 - **Local Processing**: All embeddings computed locally (no data leaves machine)
 - **No Secrets**: Never chunk files containing API keys or credentials
 - **File Permissions**: `.cortex/` inherits project permissions
+
+*Cortex v2.0.0 - Complete Software Development Methodology*

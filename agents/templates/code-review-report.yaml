@@ -1,0 +1,28 @@
+---
+template: code-review-report
+version: "1.0"
+agent: developer
+description: Code review findings with issues, security notes, and recommendations
+---
+
+# Code Review Report: {review-target}
+
+## Summary
+{1-2 sentence overview of what was reviewed and the overall assessment.}
+
+## Issues Found
+
+| Severity | Location | Issue | Suggestion |
+|----------|----------|-------|------------|
+| {critical/major/minor/nit} | {file:line or component} | {description} | {how to fix} |
+| {severity} | {location} | {description} | {suggestion} |
+
+## Security Findings
+{Security-related issues, or "No security issues identified."}
+
+## Positive Patterns
+- {Something done well worth highlighting}
+- {Good pattern that should be continued}
+
+## Recommendations
+{Overall assessment: approve, request changes, or needs discussion. Summarize the most important next steps.}

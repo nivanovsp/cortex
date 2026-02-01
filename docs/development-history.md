@@ -373,3 +373,59 @@ agents/
 ---
 
 *Cortex v1.3.0 - Development completed 2026-02-01*
+
+---
+
+## v2.0.0 - Complete Standalone Methodology
+
+**Date:** 2026-02-01
+**Objective:** Transform Cortex from a context engine with basic agents into a complete, self-contained software development methodology
+
+### Background
+
+Cortex v1.3.0 demonstrated the agent orchestration concept with 5 modes and 2 skills. However, it was incomplete — users needed external methodologies (like BMAD) for templates, structured workflows, and quality checklists. A plan to bulk-port ~45 files from BMAD was rejected in favor of purpose-built resources designed for Cortex's retrieval-based architecture.
+
+### Design Decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Agent count | 6 (added QA) | Testing deserves a full agent, not just a checklist |
+| Orchestration model | Decentralized | Any agent can start first; Orchestrator is optional |
+| Skill design | Purpose-built | Designed for Cortex retrieval, not ported from BMAD |
+| Methodology indexing | Self-indexing via bootstrap | Skills/templates chunked into METHODOLOGY domain |
+| Agent rules | Hard constraints per agent | No deprecated libs, no assumptions, no time estimates |
+| Handoff mechanism | Procedural memory | Stored with standardized keywords for retrieval |
+| Version number | 2.0.0 (not 1.4.0) | Major evolution — complete methodology, not incremental feature |
+
+### Deliverables
+
+#### Agent System
+- 6 agent mode specs (5 updated + 1 new QA) with Rules and Skills sections
+- 29 workflow skills across all agents
+- 6 phase validation checklists
+- 14 artifact templates (YAML)
+- 43 Claude Code wrappers
+
+#### CLI
+- New `bootstrap` command — chunks agents/ into METHODOLOGY domain
+
+#### Documentation
+- Updated all existing docs for v2.0.0
+- Added ADR-018: Complete Standalone Methodology
+- New release-notes-v2.0.0.md
+- New session-protocol-v2.0.0.md
+
+### Verification
+
+- [x] 6 modes with Rules and Skills sections
+- [x] 31 skills (29 new + 2 existing)
+- [x] 6 checklists
+- [x] 14 templates
+- [x] Bootstrap creates 207 chunks in METHODOLOGY domain
+- [x] Skill retrieval works via semantic search
+- [x] Decentralized activation (any agent first)
+- [x] No time estimates in any agent output
+
+---
+
+*Cortex v2.0.0 - Development completed 2026-02-01*

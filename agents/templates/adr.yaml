@@ -1,0 +1,48 @@
+---
+template: adr
+version: "1.0"
+agent: architect
+description: Architecture Decision Record capturing context, options, and rationale
+---
+
+# ADR-{number}: {title}
+
+## Status
+{Proposed | Accepted | Deprecated | Superseded by ADR-XXX}
+
+## Context
+{What prompted this decision? What forces are at play?}
+
+## Options Considered
+
+1. **{Option A}**
+   - Pros: {advantages}
+   - Cons: {disadvantages}
+
+2. **{Option B}**
+   - Pros: {advantages}
+   - Cons: {disadvantages}
+
+3. **{Option C}**
+   - Pros: {advantages}
+   - Cons: {disadvantages}
+
+## Decision
+{What was decided. State it clearly and directly.}
+
+## Rationale
+{Why this option was chosen over the alternatives. Reference the constraints and goals that drove the decision.}
+
+## Consequences
+
+### Positive
+- {Benefit of this decision}
+- {Benefit of this decision}
+
+### Negative
+- {Drawback or trade-off accepted}
+- {Drawback or trade-off accepted}
+
+## What Would Change This
+- {Condition that would cause us to revisit this decision}
+- {Condition that would cause us to revisit this decision}

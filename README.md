@@ -1,22 +1,24 @@
 # Cortex
 
-**LLM-Native Context Management**
+**Complete Software Development Methodology with LLM-Native Context Management**
 
-Cortex is a methodology for managing documentation and context in LLM-powered development workflows. It's designed around how LLMs actually process information, not human cognitive metaphors.
+Cortex is a self-contained methodology for LLM-powered software development. It provides expert agents, structured skills, artifact templates, and semantic context retrieval — everything needed to go from requirements to delivered software without external dependencies.
 
-**Version:** 1.3.0
+**Version:** 2.0.0
 
 ## Key Features
 
-- **Agent modes** - Specialist personas (analyst, architect, developer, UX, orchestrator) **(New in v1.3.0)**
+- **Complete methodology** - 6 agents, 29 skills, 14 templates, 6 checklists **(New in v2.0.0)**
+- **Decentralized orchestration** - Start with any agent, no required entry point **(New in v2.0.0)**
+- **Agent-specific rules** - Hard constraints per agent (no deprecated libs, no assumptions, no time estimates) **(New in v2.0.0)**
+- **Handoff protocol** - Structured phase transitions stored as retrievable memories **(New in v2.0.0)**
+- **Self-indexing methodology** - Skills/templates chunked into Cortex for on-demand retrieval **(New in v2.0.0)**
 - **Natural language interaction** - Just talk, agent handles commands automatically
-- **Cross-platform CLI** - Python-based, works on Windows, Mac, Linux **(New in v1.2.0)**
-- **Stale chunk detection** - Tracks source file changes automatically **(New in v1.2.0)**
+- **Cross-platform CLI** - Python-based, works on Windows, Mac, Linux
 - **~3-10% context consumption** - Retrieval-based loading (vs 30%+ for full docs)
 - **Position-aware assembly** - Critical info where LLMs pay attention
 - **Semantic retrieval** - Find relevant content via similarity, not manual links
 - **Memory system** - Capture and reuse learnings across sessions
-- **Markdown-native** - Optimized format for LLM reasoning
 - **Local embeddings** - Free, no API costs, works offline
 
 ## Installation
@@ -173,29 +175,54 @@ For power users who prefer direct CLI control:
 | **Medium** | Reasonable inference, discoveries | No |
 | **Low** | Uncertain, needs verification | No |
 
-## Agent Modes
+## Agent System
 
-Cortex ships with expert agent personas that provide specialized workflows on top of the core system.
+Cortex ships with 6 expert agents, each with dedicated skills, templates, and a quality checklist. **Any agent can be your starting point.**
 
-| Mode | Focus | Activation |
-|------|-------|-----------|
+### Agents
+
+| Agent | Focus | Activation |
+|-------|-------|-----------|
 | **Analyst** | Requirements, gap analysis, acceptance criteria | `/modes:analyst` |
-| **Architect** | System design, trade-offs, ADRs | `/modes:architect` |
+| **Architect** | System design, trade-offs, ADRs, NFRs | `/modes:architect` |
 | **Developer** | Implementation, debugging, code review | `/modes:developer` |
+| **QA** | Test strategy, quality gates, acceptance review | `/modes:qa` |
 | **UX Designer** | Interface design, accessibility, user flows | `/modes:ux-designer` |
-| **Orchestrator** | Work planning, phase coordination | `/modes:orchestrator` |
+| **Orchestrator** | Work planning, phase coordination, handoffs | `/modes:orchestrator` |
 
-**Skills:** `/skills:qa-gate` (quality checklist) | `/skills:extract-learnings` (save session learnings)
+### Skills (29 total)
+
+| Agent | Skills |
+|-------|--------|
+| Orchestrator | project-plan, phase-decomposition, handoff, progress-review, risk-assessment |
+| Analyst | elicit-requirements, create-prd, gap-analysis, define-acceptance-criteria, stakeholder-analysis |
+| Architect | system-design, api-design, nfr-assessment, create-adr, tech-evaluation, security-review |
+| Developer | implementation-plan, code-review, debug-workflow, refactor-assessment |
+| QA | test-strategy, test-case-design, quality-gate, acceptance-review, accessibility-review |
+| UX Designer | wireframe, user-flow, design-system, usability-review |
+| Shared | qa-gate, extract-learnings |
+
+### Checklists
+
+| Checklist | Agent | Purpose |
+|-----------|-------|---------|
+| phase-transition | Orchestrator | Verify phase deliverables before transition |
+| requirements-complete | Analyst | Validate requirement completeness |
+| architecture-ready | Architect | Confirm design readiness |
+| implementation-done | Developer | Verify code completeness |
+| release-ready | QA | Final quality validation |
+| ux-complete | UX Designer | Confirm UX deliverables |
 
 ### With Claude Code
 
-Modes are available as slash commands out of the box:
+Agents are available as slash commands:
 
 ```
-/modes:orchestrator    → Plan a complex task
+/modes:analyst         → Elicit and document requirements
 /modes:architect       → Design the solution
 /modes:developer       → Implement it
-/skills:qa-gate        → Validate quality
+/modes:qa              → Validate quality
+/skills:handoff        → Transition to next phase
 ```
 
 ### With Other LLM Tools
@@ -257,9 +284,11 @@ your-project/
 │   ├── main.py           # Typer app entry point
 │   └── commands/         # Command implementations
 ├── core/                 # Python core modules
-├── agents/               # Agent mode specs (tool-agnostic)
-│   ├── modes/            # Specialist personas
-│   └── skills/           # Workflow skills
+├── agents/               # Methodology resources (tool-agnostic)
+│   ├── modes/            # Agent personas (6)
+│   ├── skills/           # Workflow skills (29)
+│   ├── checklists/       # Phase validation checklists (6)
+│   └── templates/        # Artifact templates (14)
 ├── scripts/              # PowerShell CLI (deprecated)
 ├── templates/            # Chunk/memory templates
 └── docs/                 # Documentation
@@ -306,4 +335,4 @@ Dependencies:
 
 ---
 
-*Cortex v1.3.0 - LLM-Native Context Management*
+*Cortex v2.0.0 - Complete Software Development Methodology*

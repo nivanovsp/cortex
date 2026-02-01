@@ -651,3 +651,56 @@ The Orchestrator is a **planning mode**, not a runtime coordinator. Claude Code 
 - More files to maintain (7 specs + 7 wrappers)
 - Orchestrator coordination is manual (user switches modes)
 - Mode persistence depends on conversation context (may drift in long sessions)
+
+---
+
+## ADR-018: Complete Standalone Methodology
+
+**Date:** 2026-02-01
+**Status:** Accepted
+**Version:** 2.0.0
+
+### Context
+
+Cortex v1.3.0 shipped with 5 agent modes and 2 skills — enough to demonstrate the concept but not enough to be a self-contained methodology. Users still needed external systems (like BMAD) for project planning templates, quality checklists, and structured workflows. Additionally, the Orchestrator was positioned as the required entry point, and there was no QA agent.
+
+### Decision
+
+Transform Cortex into a **complete, standalone software development methodology** with:
+- 6 agents (adding QA, promoting from a skill to a full agent)
+- 29 workflow skills (purpose-built, not ported from external systems)
+- 14 artifact templates
+- 6 phase validation checklists
+- Decentralized orchestration (any agent can start first)
+- Agent-specific hard rules (no deprecated libs, no assumptions, no time estimates)
+- Self-indexing via bootstrap command (METHODOLOGY domain)
+- Handoff protocol storing phase transitions as retrievable memories
+
+### Alternatives Considered
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| Bulk-port from BMAD | Fast, many files | Identity confusion, BMAD baggage, not designed for Cortex |
+| Minimal additions | Low effort | Incomplete methodology, still needs external tools |
+| **Purpose-built (chosen)** | Designed for Cortex, self-indexing, coherent | More effort to create |
+
+### Key Design Decisions
+
+1. **Decentralized orchestration** — Orchestrator is optional, not the entry point. Any agent orients itself from Cortex state.
+2. **QA as full agent** — Testing strategy, test case design, and acceptance review warrant more than a single checklist skill.
+3. **Agent rules** — Hard constraints baked into mode specs. Developer must verify library currency. Analyst must not work with assumptions. No agent produces time estimates.
+4. **Self-indexing** — Bootstrap chunks all methodology resources into Cortex. Agents retrieve skills on-demand via semantic search instead of loading everything into context.
+5. **Handoff as memory** — Phase transitions stored as procedural memories with standardized keywords, enabling automatic retrieval by the next agent.
+
+### Consequences
+
+**Positive:**
+- Cortex is self-contained — no external methodology dependencies
+- Context consumption stays at 3-5% (skills retrieved on-demand, not pre-loaded)
+- Any agent can start first (flexibility for users who know the SDLC)
+- Methodology resources are searchable through the same engine that manages project content
+
+**Negative:**
+- ~80 new files to maintain
+- Bootstrap step required after modifying methodology resources
+- Templates and checklists need iteration based on real usage

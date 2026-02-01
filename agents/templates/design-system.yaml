@@ -1,0 +1,84 @@
+---
+template: design-system
+version: "1.0"
+agent: ux-designer
+description: Design system definition with tokens, components, patterns, and guidelines
+---
+
+# Design System: {design-system-name}
+
+## Design Tokens
+
+### Colors
+- **Primary:** {color value and usage}
+- **Secondary:** {color value and usage}
+- **Background:** {color value}
+- **Surface:** {color value}
+- **Error:** {color value}
+- **Success:** {color value}
+- **Text Primary:** {color value}
+- **Text Secondary:** {color value}
+
+### Spacing
+- **xs:** {value, e.g., 4px}
+- **sm:** {value}
+- **md:** {value}
+- **lg:** {value}
+- **xl:** {value}
+
+### Typography
+- **Heading 1:** {font, size, weight, line-height}
+- **Heading 2:** {font, size, weight, line-height}
+- **Body:** {font, size, weight, line-height}
+- **Caption:** {font, size, weight, line-height}
+
+### Shadows
+- **sm:** {shadow value}
+- **md:** {shadow value}
+- **lg:** {shadow value}
+
+## Components
+
+### {Component Name}
+
+**Purpose:** {What this component is for}
+
+**Variants:** {e.g., primary, secondary, ghost, danger}
+
+**States:**
+
+| State | Appearance |
+|-------|------------|
+| {default} | {description} |
+| {hover} | {description} |
+| {active} | {description} |
+| {disabled} | {description} |
+| {error} | {description} |
+
+**Props/Inputs:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| {prop name} | {type} | {default value} | {what it controls} |
+
+**Accessibility Requirements:**
+- {Keyboard interaction}
+- {ARIA attributes}
+- {Focus management}
+
+**Usage Guidelines:**
+{When and how to use this component. Common patterns.}
+
+## Patterns
+- **{Pattern name}:** {Description and when to use}
+- **{Pattern name}:** {Description and when to use}
+
+## Do/Don't Examples
+
+### Do
+- {Correct usage example}
+- {Correct usage example}
+
+### Don't
+- {Incorrect usage to avoid}
+- {Incorrect usage to avoid}

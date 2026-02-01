@@ -3,6 +3,7 @@ Cortex CLI - Main entry point.
 
 Usage:
     python -m cli init
+    python -m cli bootstrap
     python -m cli chunk --path "docs/"
     python -m cli index
     python -m cli retrieve --query "authentication"
@@ -33,6 +34,22 @@ def init(
     """Initialize Cortex in a project directory."""
     from cli.commands import init as init_cmd
     init_cmd.run(project_root)
+
+
+@app.command()
+def bootstrap(
+    force: bool = typer.Option(
+        False, "--force",
+        help="Delete old methodology chunks and re-chunk"
+    ),
+    project_root: Optional[Path] = typer.Option(
+        None, "--root", "-r",
+        help="Project root directory"
+    )
+):
+    """Chunk methodology resources (agents/) into Cortex for on-demand retrieval."""
+    from cli.commands import bootstrap as bootstrap_cmd
+    bootstrap_cmd.run(force, project_root)
 
 
 @app.command()
