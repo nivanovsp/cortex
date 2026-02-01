@@ -757,3 +757,56 @@ Clone-per-project is the simplest approach that works without packaging infrastr
 - Engine duplicated per project (~10MB)
 - `.cortex-engine/` should be in `.gitignore`
 - CLI invocation is longer (`cd .cortex-engine && ...`)
+
+---
+
+## ADR-020: Global CLAUDE.md Slimming
+
+**Date:** 2026-02-01
+**Status:** Accepted
+**Version:** 2.1.0
+
+### Context
+
+The global `~/.claude/CLAUDE.md` had grown to ~450 lines and contained significant problems:
+
+1. **Duplication** — The session protocol, CLI commands, memory domains, agent system, and context budget were duplicated nearly verbatim between global and project CLAUDE.md. Every Cortex project loaded this content twice.
+2. **Project-specific content in global scope** — ~60% of the global file (init/update procedures, session protocol, CLI invocation patterns) only applied to projects with `.cortex-engine/`. Non-Cortex projects processed irrelevant instructions.
+3. **Critical Thinking Protocol bloat** — ~110 lines of metacognition instructions, where only ~40 lines (the lookup tables) produced measurable behavioral change.
+
+### Decision
+
+**Slim the global CLAUDE.md to ~175 lines** containing only universal rules:
+
+1. **Keep** the four behavioral tables (uncertainty communication, disagreement handling, anti-patterns, external verification) — these are lookup tables with concrete patterns that directly shape model output.
+2. **Cut** the four-layer metacognition structure (dispositions, triggers, self-monitoring, domain checkpoints) — abstract virtues and internal questions don't produce verifiable behavior change.
+3. **Move** domain-specific checkpoints to agent mode specs — each agent already has its own domain thinking guidance.
+4. **Move** all Cortex-specific content (session protocol, CLI commands, init/update procedures) to the project CLAUDE.md.
+5. **Replace** with a short pointer: "Cortex-enabled projects handle their own session protocol via project CLAUDE.md."
+
+### Analysis: What's Load-Bearing vs Decorative
+
+| Content | Lines | Impact | Decision |
+|---------|-------|--------|----------|
+| Uncertainty communication table | 12 | High — directly shapes output language | Keep |
+| Disagreement handling table | 8 | High — concrete escalation levels | Keep |
+| Anti-patterns table | 10 | High — prevents specific failure modes | Keep |
+| External verification principle | 8 | High — stops false correctness claims | Keep |
+| Layer 1: Default Dispositions | 6 | Low — generic virtues models already exhibit | Cut |
+| Layer 2: Automatic Triggers | 8 | Low — describes existing model behavior | Cut |
+| Layer 4: Metacognition | 8 | Low — unverifiable internal questions | Cut |
+| Domain-Specific Checkpoints | 25 | Medium — but already in agent mode files | Move to agents |
+| Session protocol + CLI | ~155 | High — but project-specific | Move to project |
+| Init/Update procedures | ~55 | High — but project-specific | Move to project |
+
+### Consequences
+
+**Positive:**
+- Global file reduced from ~450 to ~175 lines (61% reduction)
+- No duplication between global and project CLAUDE.md
+- Non-Cortex projects no longer process irrelevant instructions
+- All behavioral shaping preserved (the four tables)
+
+**Negative:**
+- Global file no longer self-contained for Cortex behavior — depends on project CLAUDE.md
+- Users must ensure project CLAUDE.md is present (handled by init)

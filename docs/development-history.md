@@ -483,3 +483,47 @@ Testing v2.0.0 in a new empty folder revealed the chicken-and-egg problem: "cort
 ---
 
 *Cortex v2.1.0 - Development completed 2026-02-01*
+
+---
+
+## v2.1.0 (continued) - Global CLAUDE.md Restructuring
+
+**Date:** 2026-02-01
+**Objective:** Eliminate duplication between global and project CLAUDE.md, condense Critical Thinking Protocol
+
+### Background
+
+The global `~/.claude/CLAUDE.md` had grown to ~450 lines with three problems: massive duplication with the project CLAUDE.md, project-specific content in global scope, and a ~110-line Critical Thinking Protocol where only ~40 lines (the four lookup tables) produced measurable behavioral change.
+
+### Design Decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Critical Thinking Protocol | Keep 4 tables, cut 4 layers | Tables are lookup-driven (high impact); layers are abstract virtues (low impact) |
+| Domain checkpoints | Move to agent modes | All 6 agents already have domain-specific thinking guidance |
+| Session protocol | Keep in project CLAUDE.md only | Project-specific content shouldn't be in global scope |
+| Init/update procedures | Move to project CLAUDE.md | Were only in global; now in the file that ships with each project |
+| Version | Stay at 2.1.0 | No functional change — just content reorganization |
+
+### Deliverables
+
+#### Global CLAUDE.md (`~/.claude/CLAUDE.md` and `global/CLAUDE.md`)
+- Reduced from ~450 to ~175 lines (61% reduction)
+- Kept: RMS framework, conventions, protocols, 4 behavioral tables, git conventions
+- Cut: Metacognition layers, domain checkpoints, session protocol, init/update
+- Added: "Cortex-Enabled Projects" pointer section
+
+#### Project CLAUDE.md
+- Added: Cortex Initialization and Update procedures (moved from global)
+- Bumped: All version references to 2.1.0
+
+#### Documentation
+- Added ADR-020: Global CLAUDE.md Slimming
+
+### Verification
+
+- [x] All 4 behavioral tables preserved in global CLAUDE.md
+- [x] Init/update procedures present in project CLAUDE.md
+- [x] No duplication between global and project files
+- [x] Global and distributable copy (`global/CLAUDE.md`) are identical
+- [x] Version consistent at 2.1.0 across all files
