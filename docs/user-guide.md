@@ -47,12 +47,6 @@ The agent handles everything automatically.
 
 4. **Copy Methodology Files**
    ```bash
-   # Windows
-   xcopy /E /I /Y .cortex-engine\agents agents
-   xcopy /E /I /Y .cortex-engine\.claude .claude
-   copy /Y .cortex-engine\CLAUDE.md CLAUDE.md
-
-   # Mac/Linux
    cp -r .cortex-engine/agents ./agents
    cp -r .cortex-engine/.claude ./.claude
    cp .cortex-engine/CLAUDE.md ./CLAUDE.md

@@ -39,12 +39,7 @@ git clone https://github.com/nivanovsp/cortex.git .cortex-engine
 # Install dependencies
 pip install -r .cortex-engine/requirements.txt
 
-# Copy methodology files (Windows)
-xcopy /E /I /Y .cortex-engine\agents agents
-xcopy /E /I /Y .cortex-engine\.claude .claude
-copy /Y .cortex-engine\CLAUDE.md CLAUDE.md
-
-# Copy methodology files (Mac/Linux)
+# Copy methodology files
 cp -r .cortex-engine/agents ./agents
 cp -r .cortex-engine/.claude ./.claude
 cp .cortex-engine/CLAUDE.md ./CLAUDE.md

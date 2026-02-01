@@ -146,8 +146,11 @@ When the user says "initialize cortex", "cortex init", or "set up cortex", run t
 2. **Install dependencies** — `pip install -r .cortex-engine/requirements.txt`
 
 3. **Copy methodology** — Copy from `.cortex-engine/` into the project root:
-   - On Windows: `xcopy /E /I /Y .cortex-engine\agents agents && xcopy /E /I /Y .cortex-engine\.claude .claude && copy /Y .cortex-engine\CLAUDE.md CLAUDE.md`
-   - On Mac/Linux: `cp -r .cortex-engine/agents ./agents && cp -r .cortex-engine/.claude ./.claude && cp .cortex-engine/CLAUDE.md ./CLAUDE.md`
+   ```bash
+   cp -r .cortex-engine/agents ./agents
+   cp -r .cortex-engine/.claude ./.claude
+   cp .cortex-engine/CLAUDE.md ./CLAUDE.md
+   ```
 
 4. **Initialize Cortex** — `cd .cortex-engine && python -m cli init --root ..`
 

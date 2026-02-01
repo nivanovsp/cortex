@@ -35,14 +35,6 @@ pip install -r .cortex-engine/requirements.txt
 
 #### Step 3: Copy Methodology Files
 
-**Windows:**
-```bash
-xcopy /E /I /Y .cortex-engine\agents agents
-xcopy /E /I /Y .cortex-engine\.claude .claude
-copy /Y .cortex-engine\CLAUDE.md CLAUDE.md
-```
-
-**Mac/Linux:**
 ```bash
 cp -r .cortex-engine/agents ./agents
 cp -r .cortex-engine/.claude ./.claude
