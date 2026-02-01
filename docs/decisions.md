@@ -781,8 +781,8 @@ The global `~/.claude/CLAUDE.md` had grown to ~450 lines and contained significa
 1. **Keep** the four behavioral tables (uncertainty communication, disagreement handling, anti-patterns, external verification) — these are lookup tables with concrete patterns that directly shape model output.
 2. **Cut** the four-layer metacognition structure (dispositions, triggers, self-monitoring, domain checkpoints) — abstract virtues and internal questions don't produce verifiable behavior change.
 3. **Move** domain-specific checkpoints to agent mode specs — each agent already has its own domain thinking guidance.
-4. **Move** all Cortex-specific content (session protocol, CLI commands, init/update procedures) to the project CLAUDE.md.
-5. **Replace** with a short pointer: "Cortex-enabled projects handle their own session protocol via project CLAUDE.md."
+4. **Move** session protocol, CLI commands, memory domains, and agent system to the project CLAUDE.md only.
+5. **Keep** init/update procedures in both global and project CLAUDE.md — the global file must contain these because it's the only file present before initialization (see Amendment below).
 
 ### Analysis: What's Load-Bearing vs Decorative
 
@@ -797,16 +797,23 @@ The global `~/.claude/CLAUDE.md` had grown to ~450 lines and contained significa
 | Layer 4: Metacognition | 8 | Low — unverifiable internal questions | Cut |
 | Domain-Specific Checkpoints | 25 | Medium — but already in agent mode files | Move to agents |
 | Session protocol + CLI | ~155 | High — but project-specific | Move to project |
-| Init/Update procedures | ~55 | High — but project-specific | Move to project |
+| Init/Update procedures | ~55 | High — must be in global (bootstrap) | Keep in both |
 
 ### Consequences
 
 **Positive:**
-- Global file reduced from ~450 to ~175 lines (61% reduction)
-- No duplication between global and project CLAUDE.md
-- Non-Cortex projects no longer process irrelevant instructions
+- Global file reduced from ~450 to ~230 lines (49% reduction)
+- Session protocol, agent system, memory domains no longer duplicated
+- Non-Cortex projects process less irrelevant content
 - All behavioral shaping preserved (the four tables)
 
 **Negative:**
-- Global file no longer self-contained for Cortex behavior — depends on project CLAUDE.md
-- Users must ensure project CLAUDE.md is present (handled by init)
+- Init/update procedures intentionally duplicated in both files (bootstrap requirement)
+
+### Amendment: Init/Update Chicken-and-Egg
+
+**Date:** 2026-02-01
+
+Initial implementation moved init/update procedures entirely to project CLAUDE.md. Testing in a new empty folder revealed the chicken-and-egg problem: "cortex init" requires these instructions, but the project CLAUDE.md doesn't exist until after initialization completes (step 3 copies it from the engine).
+
+**Fix:** Restored init/update procedures to the global CLAUDE.md. This duplication is intentional and necessary — the global file bootstraps the project file. Final global file size: ~230 lines (still down from ~450).

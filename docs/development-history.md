@@ -502,20 +502,25 @@ The global `~/.claude/CLAUDE.md` had grown to ~450 lines with three problems: ma
 | Critical Thinking Protocol | Keep 4 tables, cut 4 layers | Tables are lookup-driven (high impact); layers are abstract virtues (low impact) |
 | Domain checkpoints | Move to agent modes | All 6 agents already have domain-specific thinking guidance |
 | Session protocol | Keep in project CLAUDE.md only | Project-specific content shouldn't be in global scope |
-| Init/update procedures | Move to project CLAUDE.md | Were only in global; now in the file that ships with each project |
+| Init/update procedures | Keep in both global and project | Global file is the only file present before init — must contain bootstrap instructions |
 | Version | Stay at 2.1.0 | No functional change — just content reorganization |
 
 ### Deliverables
 
 #### Global CLAUDE.md (`~/.claude/CLAUDE.md` and `global/CLAUDE.md`)
-- Reduced from ~450 to ~175 lines (61% reduction)
-- Kept: RMS framework, conventions, protocols, 4 behavioral tables, git conventions
-- Cut: Metacognition layers, domain checkpoints, session protocol, init/update
+- Reduced from ~450 to ~230 lines (49% reduction)
+- Kept: RMS framework, conventions, protocols, 4 behavioral tables, git conventions, init/update procedures
+- Cut: Metacognition layers, domain checkpoints, session protocol, memory domains, agent system
 - Added: "Cortex-Enabled Projects" pointer section
 
 #### Project CLAUDE.md
-- Added: Cortex Initialization and Update procedures (moved from global)
+- Added: Cortex Initialization and Update procedures (also in global — intentional duplication)
 - Bumped: All version references to 2.1.0
+
+#### Chicken-and-Egg Fix
+- Initial attempt moved init/update entirely to project CLAUDE.md
+- Testing in empty folder failed — no project CLAUDE.md exists before init
+- Restored init/update to global file; duplication is intentional for bootstrap
 
 #### Documentation
 - Added ADR-020: Global CLAUDE.md Slimming
@@ -524,6 +529,6 @@ The global `~/.claude/CLAUDE.md` had grown to ~450 lines with three problems: ma
 
 - [x] All 4 behavioral tables preserved in global CLAUDE.md
 - [x] Init/update procedures present in project CLAUDE.md
-- [x] No duplication between global and project files
+- [x] Init/update intentionally in both files (bootstrap requirement)
 - [x] Global and distributable copy (`global/CLAUDE.md`) are identical
 - [x] Version consistent at 2.1.0 across all files
