@@ -323,3 +323,62 @@ python -m cli index              # Rebuild indices
 - **Local Embeddings**: e5-small-v2 runs locally, no API costs
 - **Cross-Platform**: Python CLI works on Windows, Mac, and Linux
 - **No Time Estimates**: No agent produces duration predictions or timelines
+
+---
+
+## Cortex Initialization
+
+When the user says "initialize cortex", "cortex init", or "set up cortex", run the following sequence in the current project directory. Stop immediately if any step fails.
+
+### Steps
+
+1. **Clone engine** — `git clone https://github.com/nivanovsp/cortex.git .cortex-engine`
+   - If `.cortex-engine/` already exists, ask the user whether to re-clone or skip.
+
+2. **Install dependencies** — `pip install -r .cortex-engine/requirements.txt`
+
+3. **Copy methodology** — Copy from `.cortex-engine/` into the project root:
+   - On Windows: `xcopy /E /I /Y .cortex-engine\agents agents && xcopy /E /I /Y .cortex-engine\.claude .claude && copy /Y .cortex-engine\CLAUDE.md CLAUDE.md`
+   - On Mac/Linux: `cp -r .cortex-engine/agents ./agents && cp -r .cortex-engine/.claude ./.claude && cp .cortex-engine/CLAUDE.md ./CLAUDE.md`
+
+4. **Initialize Cortex** — `cd .cortex-engine && python -m cli init --root ..`
+
+5. **Bootstrap methodology** — `cd .cortex-engine && python -m cli bootstrap --root ..`
+
+6. **Build indices** — `cd .cortex-engine && python -m cli index --root ..`
+
+7. **Update .gitignore** — Add `.cortex-engine/` and `.cortex/` to `.gitignore` (create it if needed).
+
+8. **Verify** — `cd .cortex-engine && python -m cli status --root ..` — confirm chunks exist and METHODOLOGY domain is present.
+
+### Report
+
+After completion, report:
+```
+Cortex initialized.
+- Chunks: {count}
+- Memories: {count}
+- Domains: {list}
+```
+
+---
+
+## Cortex Update
+
+When the user says "cortex update", "update cortex", or "refresh cortex", run the following sequence. Stop immediately if any step fails.
+
+### Steps
+
+1. **Pull latest** — `cd .cortex-engine && git pull`
+
+2. **Re-copy methodology** — Copy updated files from `.cortex-engine/` into the project root (same copy commands as initialization step 3).
+
+3. **Re-bootstrap** — `cd .cortex-engine && python -m cli bootstrap --force --root ..`
+
+4. **Rebuild indices** — `cd .cortex-engine && python -m cli index --root ..`
+
+5. **Verify** — `cd .cortex-engine && python -m cli status --root ..`
+
+### Report
+
+After completion, report what changed (new chunk count vs old, any new files).
