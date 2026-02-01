@@ -18,12 +18,22 @@
 
 This protocol defines how you (the agent) interact with Cortex throughout a session. Follow these instructions automatically — users should not need to know about commands.
 
+### CLI Invocation
+
+All CLI commands run from the `.cortex-engine/` directory with `--root` pointing to the project:
+
+```
+cd .cortex-engine && python -m cli <command> --root ..
+```
+
+When working inside the Cortex repo itself (development), the simpler `python -m cli <command>` works directly.
+
 ### Agent Activation (Decentralized)
 
 **Any agent can be the entry point.** There is no required starting agent. Every agent follows the same activation flow:
 
 1. Load mode spec (~2KB — persona, rules, skills list)
-2. Run `python -m cli status --json` silently — note metadata
+2. Run `cd .cortex-engine && python -m cli status --json --root ..` silently — note metadata
 3. Greet the user as your persona — state what you can do
 4. **Wait for the user to select a topic/task**
 5. THEN retrieve handoffs, artifacts, and learnings for that topic
@@ -35,7 +45,7 @@ This protocol defines how you (the agent) interact with Cortex throughout a sess
 
 When the conversation begins without a mode activation:
 
-1. Run `python -m cli status --json` silently
+1. Run `cd .cortex-engine && python -m cli status --json --root ..` silently
 2. Note the result internally (chunk count, memory count, domains, stale chunks)
 3. **DO NOT** load any content files — wait for task identification
 4. Greet the user and mention Cortex is available if relevant
@@ -56,7 +66,7 @@ When the user specifies what to work on, detect phrases like:
 
 **Action:**
 1. Extract the task from their statement
-2. Run `python -m cli assemble --task "{extracted task}"`
+2. Run `cd .cortex-engine && python -m cli assemble --task "{extracted task}" --root ..`
 3. Use the returned context frame to inform your work
 4. **DO NOT** mention the command to the user — just have the context
 
@@ -76,7 +86,7 @@ When the user asks for more information, detect phrases like:
 
 **Action:**
 1. Extract the topic from their question
-2. Run `python -m cli retrieve --query "{topic}"`
+2. Run `cd .cortex-engine && python -m cli retrieve --query "{topic}" --root ..`
 3. Present the information naturally
 4. **DO NOT** mention the command — just answer their question
 
@@ -93,11 +103,11 @@ When the user explicitly requests learning extraction, detect phrases like:
 
 **Action:**
 1. Identify key learnings from the session (fixes, discoveries, procedures)
-2. Run `python -m cli extract --text "{learnings summary}"`
+2. Run `cd .cortex-engine && python -m cli extract --text "{learnings summary}" --root ..`
 3. Present proposed memories to the user with confidence levels
 4. Ask which memories to save
 5. Save approved memories
-6. Run `python -m cli index` to rebuild the index
+6. Run `cd .cortex-engine && python -m cli index --root ..` to rebuild the index
 
 ### Context Budget
 
@@ -201,18 +211,34 @@ All optional - defaults work out of the box:
 
 These commands are called automatically by the session protocol. Users should not need to invoke them directly.
 
+### From installed projects (engine in `.cortex-engine/`)
+
+All commands run from `.cortex-engine/` with `--root` pointing to the project:
+
+```
+cd .cortex-engine && python -m cli <command> --root ..
+```
+
 | Command | Purpose | When Called |
 |---------|---------|-------------|
-| `python -m cli status` | Get system metadata | Session start |
-| `python -m cli assemble --task "..."` | Build context frame | Task identified |
-| `python -m cli retrieve --query "..."` | Search for context | User asks for info |
-| `python -m cli extract --text "..."` | Extract learnings | User ends session |
-| `python -m cli index` | Rebuild indices | After saving memories |
-| `python -m cli memory add --learning "..."` | Add memory manually | Explicit request |
-| `python -m cli init` | Initialize Cortex | Project setup |
-| `python -m cli bootstrap` | Chunk methodology into Cortex | After init or adding agents |
-| `python -m cli chunk --path "..."` | Chunk documents | Adding new docs |
-| `python -m cli chunk --path "..." --refresh` | Re-chunk modified files | Stale chunks detected |
+| `cd .cortex-engine && python -m cli status --root ..` | Get system metadata | Session start |
+| `cd .cortex-engine && python -m cli assemble --task "..." --root ..` | Build context frame | Task identified |
+| `cd .cortex-engine && python -m cli retrieve --query "..." --root ..` | Search for context | User asks for info |
+| `cd .cortex-engine && python -m cli extract --text "..." --root ..` | Extract learnings | User ends session |
+| `cd .cortex-engine && python -m cli index --root ..` | Rebuild indices | After saving memories |
+| `cd .cortex-engine && python -m cli memory add --learning "..." --root ..` | Add memory manually | Explicit request |
+| `cd .cortex-engine && python -m cli init --root ..` | Initialize Cortex | Project setup |
+| `cd .cortex-engine && python -m cli bootstrap --root ..` | Chunk methodology | After init |
+| `cd .cortex-engine && python -m cli chunk --path "..." --root ..` | Chunk documents | Adding new docs |
+| `cd .cortex-engine && python -m cli chunk --path "..." --refresh --root ..` | Re-chunk modified files | Stale chunks |
+
+### From Cortex repo (development)
+
+When working inside the Cortex repo itself, the simpler form works:
+
+```
+python -m cli <command>
+```
 
 ---
 

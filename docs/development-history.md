@@ -429,3 +429,57 @@ Cortex v1.3.0 demonstrated the agent orchestration concept with 5 modes and 2 sk
 ---
 
 *Cortex v2.0.0 - Development completed 2026-02-01*
+
+---
+
+## v2.1.0 - Standalone Installation
+
+**Date:** 2026-02-01
+**Objective:** Make Cortex installable from any project folder with a single natural language command
+
+### Background
+
+Testing v2.0.0 in a new empty folder revealed the chicken-and-egg problem: "cortex init" required the CLI to already be present. The BMAD methodology solved this with `npx bmad-method install` — a single command that sets everything up. Cortex needed the same simplicity.
+
+### Design Decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Engine location | `.cortex-engine/` per project | Simple, self-contained, same as BMAD pattern |
+| CLI path resolution | `Path(__file__).parent.parent.parent` | Finds `core/` relative to engine, not project root |
+| Invocation pattern | `cd .cortex-engine && python -m cli <cmd> --root ..` | Python `-m` needs to run from engine dir |
+| Init trigger | Natural language in global CLAUDE.md | No project files needed to start |
+| Update mechanism | `git pull` + re-bootstrap | Simple, no package manager |
+| Global CLAUDE.md | Complete standalone rewrite | Removed Neocortex/MLDA/Beads; added init/update instructions |
+
+### Deliverables
+
+#### CLI Changes
+- All 9 command files in `cli/commands/` updated: `sys.path.insert` uses engine root
+- Backward compatible — running from Cortex repo directly still works
+
+#### Global CLAUDE.md (`global/CLAUDE.md`)
+- Complete rewrite as standalone file
+- Includes: RMS framework, conventions, protocols, Critical Thinking Protocol
+- Includes: Cortex session protocol with `.cortex-engine` CLI pattern
+- Includes: Cortex Initialization and Update instructions
+- No external dependencies
+
+#### Documentation
+- Updated: CHANGELOG, INSTALL, README, architecture, cortex-spec, decisions, user-guide
+- New: release-notes-v2.1.0.md, session-protocol-v2.1.0.md
+- New ADR-019: Standalone Installation via .cortex-engine
+
+### Verification
+
+- [x] CLI works from `.cortex-engine/` with `--root ..`
+- [x] CLI still works from Cortex repo directly (backward compatible)
+- [x] Global CLAUDE.md is complete and standalone
+- [x] "cortex init" instructions in global CLAUDE.md
+- [x] "cortex update" instructions in global CLAUDE.md
+- [x] All session protocol CLI references updated
+- [x] `core/__init__.py` version corrected to 2.0.0
+
+---
+
+*Cortex v2.1.0 - Development completed 2026-02-01*

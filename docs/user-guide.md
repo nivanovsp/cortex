@@ -2,7 +2,7 @@
 
 A comprehensive guide to using Cortex for LLM-native context management.
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 
 ## Table of Contents
 
@@ -21,30 +21,53 @@ A comprehensive guide to using Cortex for LLM-native context management.
 
 ## Getting Started
 
-### Installation
+### Quick Setup (with Claude Code)
+
+1. **One-time:** Copy `global/CLAUDE.md` to `~/.claude/CLAUDE.md`
+2. **In any project folder:** Say "cortex init"
+
+The agent handles everything automatically.
+
+### Manual Setup
 
 1. **Prerequisites**
    - Python 3.8+
+   - Git
    - ~200MB disk space for embedding model
 
-2. **Install Dependencies**
+2. **Clone Engine**
    ```bash
-   pip install -r requirements.txt
+   git clone https://github.com/nivanovsp/cortex.git .cortex-engine
    ```
 
-3. **Initialize Cortex**
+3. **Install Dependencies**
    ```bash
-   cd your-project
-   python -m cli init
+   pip install -r .cortex-engine/requirements.txt
    ```
 
-   This creates:
-   - `.cortex/` directory structure
-   - Downloads embedding model (~130MB, first run only)
-
-4. **Verify Installation**
+4. **Copy Methodology Files**
    ```bash
-   python -m cli status
+   # Windows
+   xcopy /E /I /Y .cortex-engine\agents agents
+   xcopy /E /I /Y .cortex-engine\.claude .claude
+   copy /Y .cortex-engine\CLAUDE.md CLAUDE.md
+
+   # Mac/Linux
+   cp -r .cortex-engine/agents ./agents
+   cp -r .cortex-engine/.claude ./.claude
+   cp .cortex-engine/CLAUDE.md ./CLAUDE.md
+   ```
+
+5. **Initialize and Bootstrap**
+   ```bash
+   cd .cortex-engine && python -m cli init --root ..
+   cd .cortex-engine && python -m cli bootstrap --root ..
+   cd .cortex-engine && python -m cli index --root ..
+   ```
+
+6. **Verify**
+   ```bash
+   cd .cortex-engine && python -m cli status --root ..
    ```
 
 ### First Steps
@@ -225,28 +248,30 @@ Run before concluding a phase: `/checklists:{name}`
 ### When to Use CLI Directly
 
 Most users won't need to run commands. However, you can use them for:
-- Initial setup (`python -m cli init`)
-- Bulk document chunking (`python -m cli chunk --path docs/`)
-- Refreshing stale chunks (`python -m cli chunk --path file.md --refresh`)
-- Debugging (`python -m cli status --json`)
+- Initial setup (`cd .cortex-engine && python -m cli init --root ..`)
+- Bulk document chunking (`cd .cortex-engine && python -m cli chunk --path docs/ --root ..`)
+- Refreshing stale chunks (`cd .cortex-engine && python -m cli chunk --path file.md --refresh --root ..`)
+- Debugging (`cd .cortex-engine && python -m cli status --json --root ..`)
 
 ---
 
 ### First Steps (Manual)
 
+All CLI commands run from `.cortex-engine/` with `--root ..`:
+
 1. **Chunk your documentation**
    ```bash
-   python -m cli chunk --path docs/
+   cd .cortex-engine && python -m cli chunk --path docs/ --root ..
    ```
 
 2. **Build the search index**
    ```bash
-   python -m cli index
+   cd .cortex-engine && python -m cli index --root ..
    ```
 
 3. **Test retrieval**
    ```bash
-   python -m cli retrieve --query "authentication"
+   cd .cortex-engine && python -m cli retrieve --query "authentication" --root ..
    ```
 
 ---

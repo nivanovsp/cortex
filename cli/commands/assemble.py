@@ -18,7 +18,8 @@ def run(
 
     # Import core modules
     import sys
-    sys.path.insert(0, str(root))
+    engine_root = str(Path(__file__).resolve().parent.parent.parent)
+    sys.path.insert(0, engine_root)
 
     from core.assembler import assemble_and_render
 

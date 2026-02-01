@@ -21,7 +21,8 @@ def add(
 
     # Import core modules
     import sys
-    sys.path.insert(0, str(root))
+    engine_root = str(Path(__file__).resolve().parent.parent.parent)
+    sys.path.insert(0, engine_root)
 
     from core.memory import create_memory
 
@@ -49,7 +50,8 @@ def list_memories(
 
     # Import core modules
     import sys
-    sys.path.insert(0, str(root))
+    engine_root = str(Path(__file__).resolve().parent.parent.parent)
+    sys.path.insert(0, engine_root)
 
     from core.memory import list_memories as core_list_memories
 
@@ -94,7 +96,8 @@ def delete(
 
     # Import core modules
     import sys
-    sys.path.insert(0, str(root))
+    engine_root = str(Path(__file__).resolve().parent.parent.parent)
+    sys.path.insert(0, engine_root)
 
     from core.memory import delete_memory
 

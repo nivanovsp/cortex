@@ -1,7 +1,7 @@
 # Cortex: LLM-Native Context Management
 
 **Status**: Specification
-**Version**: 2.0.0
+**Version**: 2.1.0
 **Date**: 2026-02-01
 **Author**: Claude (Architect Mode)
 
@@ -701,25 +701,31 @@ retrieval_count: 0
 
 ---
 
-## Appendix B: CLI Commands (v1.2.0)
+## Appendix B: CLI Commands (v2.1.0)
 
-**Note:** As of v1.2.0, Cortex uses a cross-platform Python CLI. PowerShell scripts are deprecated.
+All commands run from `.cortex-engine/` with `--root` pointing to the project:
+
+```bash
+cd .cortex-engine && python -m cli <command> --root ..
+```
+
+When developing inside the Cortex repo itself, the simpler `python -m cli <command>` works.
 
 | Command | Purpose |
 |---------|---------|
-| `python -m cli init` | Initialize Cortex in a project |
-| `python -m cli chunk --path <file>` | Chunk a document |
-| `python -m cli chunk --path <file> --refresh` | Refresh stale chunks |
-| `python -m cli index` | Rebuild indices |
-| `python -m cli retrieve --query <text>` | Test retrieval |
-| `python -m cli assemble --task <text>` | Build context frame |
-| `python -m cli memory add --learning <text>` | Add a memory |
-| `python -m cli memory list` | List memories |
-| `python -m cli memory delete <id>` | Delete a memory |
-| `python -m cli extract --text <text>` | Extract learnings |
-| `python -m cli status` | Show status and stale chunks |
-| `python -m cli status --json` | JSON output for automation |
-| `python -m cli bootstrap` | Chunk methodology into Cortex |
+| `init --root ..` | Initialize Cortex in a project |
+| `chunk --path <file> --root ..` | Chunk a document |
+| `chunk --path <file> --refresh --root ..` | Refresh stale chunks |
+| `index --root ..` | Rebuild indices |
+| `retrieve --query <text> --root ..` | Test retrieval |
+| `assemble --task <text> --root ..` | Build context frame |
+| `memory add --learning <text> --root ..` | Add a memory |
+| `memory list --root ..` | List memories |
+| `memory delete <id> --root ..` | Delete a memory |
+| `extract --text <text> --root ..` | Extract learnings |
+| `status --root ..` | Show status and stale chunks |
+| `status --json --root ..` | JSON output for automation |
+| `bootstrap --root ..` | Chunk methodology into Cortex |
 
 ---
 
@@ -889,4 +895,4 @@ All agents support:
 
 ---
 
-*Cortex v2.0.0 - Complete Software Development Methodology*
+*Cortex v2.1.0 - Complete Software Development Methodology*

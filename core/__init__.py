@@ -4,7 +4,7 @@ Cortex Core - LLM-Native Context Management
 Core modules for chunking, embedding, indexing, and retrieval.
 """
 
-__version__ = "1.2.0"
+__version__ = "2.0.0"
 
 # Lazy imports to avoid circular dependencies
 from .config import Config

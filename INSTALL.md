@@ -1,89 +1,151 @@
 # Cortex Installation Guide
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 
 ## Prerequisites
 
 - Python 3.8+
+- Git
 - ~200MB disk space (for embedding model)
-- Claude Code (optional, for full integration)
+- Claude Code (recommended, for full integration)
 
-**Note:** As of v1.2.0, Cortex uses a cross-platform Python CLI. PowerShell is no longer required.
+## Quick Setup (Recommended)
 
-## Installation Steps
+### Option A: Natural Language (with Claude Code)
 
-### Step 1: Get Cortex
+1. **Copy `global/CLAUDE.md`** to `~/.claude/CLAUDE.md` (one-time setup)
+2. **Open any project** in Claude Code
+3. **Say:** "cortex init"
 
-**Option A: Clone from GitHub**
-```bash
-git clone https://github.com/nivanovsp/cortex.git
-cd cortex
-```
+The agent handles everything — cloning, installing, copying files, bootstrapping, and indexing.
 
-**Option B: Copy to existing project**
-```bash
-cp -r path/to/cortex/ your-project/cortex/
-```
+### Option B: Manual Setup
 
-### Step 2: Install Dependencies
+#### Step 1: Clone Cortex Engine
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/nivanovsp/cortex.git .cortex-engine
 ```
 
-This installs:
-- `sentence-transformers` - Local embeddings (e5-small-v2)
-- `numpy` - Vector operations
-- `tiktoken` - Token counting
-- `typer` - CLI framework
-- `rich` - Terminal formatting
-
-### Step 3: Initialize Cortex
+#### Step 2: Install Dependencies
 
 ```bash
-python -m cli init
+pip install -r .cortex-engine/requirements.txt
 ```
 
-This will:
-- Create `.cortex/` directory structure
-- Download the e5-small-v2 embedding model (~130MB, first run only)
+#### Step 3: Copy Methodology Files
 
-### Step 4: Configure Claude Code (Recommended)
-
-For full Claude Code integration with natural language support (v1.2.0), add Cortex rules to your global CLAUDE.md:
-
-1. **Open your global CLAUDE.md:**
-   ```bash
-   # Windows
-   notepad %USERPROFILE%\.claude\CLAUDE.md
-
-   # Mac/Linux
-   nano ~/.claude/CLAUDE.md
-   ```
-
-2. **Find the "Cortex Context Management" section** and update it with the v1.2.0 version from the project (see `global/CLAUDE.md` for reference).
-
-3. **Save and close.**
-
-This enables:
-- Natural language interaction ("Let's work on X", "What do we know about Y")
-- Automatic context loading when you specify a task
-- Seamless retrieval without running commands
-- Stale chunk detection and refresh workflow
-- User-triggered learning extraction ("Update learning")
-- Agent mode references (see Step 5)
-
-### Step 5: Agent System (Included)
-
-Cortex v2.0.0 ships with a complete methodology — 6 agents, 29 skills, 14 templates, 6 checklists.
-
-**Bootstrap methodology resources (optional but recommended):**
+**Windows:**
 ```bash
-python -m cli bootstrap
-python -m cli index
+xcopy /E /I /Y .cortex-engine\agents agents
+xcopy /E /I /Y .cortex-engine\.claude .claude
+copy /Y .cortex-engine\CLAUDE.md CLAUDE.md
 ```
 
-This chunks methodology resources into Cortex for on-demand retrieval by agents.
+**Mac/Linux:**
+```bash
+cp -r .cortex-engine/agents ./agents
+cp -r .cortex-engine/.claude ./.claude
+cp .cortex-engine/CLAUDE.md ./CLAUDE.md
+```
+
+#### Step 4: Initialize Cortex
+
+```bash
+cd .cortex-engine && python -m cli init --root ..
+```
+
+This creates `.cortex/` directory and downloads the embedding model (~130MB, first run only).
+
+#### Step 5: Bootstrap Methodology
+
+```bash
+cd .cortex-engine && python -m cli bootstrap --root ..
+cd .cortex-engine && python -m cli index --root ..
+```
+
+#### Step 6: Update .gitignore
+
+Add to your `.gitignore`:
+```
+.cortex-engine/
+.cortex/
+```
+
+#### Step 7: Configure Global Rules
+
+Copy `global/CLAUDE.md` from the Cortex repo to `~/.claude/CLAUDE.md`:
+
+**Windows:**
+```bash
+copy .cortex-engine\global\CLAUDE.md %USERPROFILE%\.claude\CLAUDE.md
+```
+
+**Mac/Linux:**
+```bash
+cp .cortex-engine/global/CLAUDE.md ~/.claude/CLAUDE.md
+```
+
+#### Step 8: Verify
+
+```bash
+cd .cortex-engine && python -m cli status --root ..
+```
+
+You should see chunks in the METHODOLOGY domain.
+
+## Project Structure After Setup
+
+```
+your-project/
+├── .cortex-engine/       # Cloned Cortex repo (engine + source)
+├── .cortex/              # Runtime data (chunks, memories, indices)
+├── .claude/commands/     # Slash commands for Claude Code
+├── agents/               # Modes, skills, templates, checklists
+├── CLAUDE.md             # Project-level Cortex instructions
+└── (your project files)
+```
+
+## CLI Commands Reference
+
+All commands run from `.cortex-engine/` with `--root` pointing to the project:
+
+```bash
+cd .cortex-engine && python -m cli <command> --root ..
+```
+
+| Command | Purpose |
+|---------|---------|
+| `init --root ..` | Initialize Cortex |
+| `status --root ..` | Show status and stale chunks |
+| `chunk --path <file> --root ..` | Chunk documents |
+| `chunk --path <file> --refresh --root ..` | Refresh stale chunks |
+| `index --root ..` | Build/rebuild indices |
+| `retrieve --query <text> --root ..` | Search for context |
+| `assemble --task <text> --root ..` | Build context frame |
+| `memory add --learning <text> --root ..` | Add a memory |
+| `memory list --root ..` | List memories |
+| `extract --text <text> --root ..` | Extract learnings |
+| `bootstrap --root ..` | Chunk methodology into Cortex |
+
+## Updating Cortex
+
+Say "cortex update" in Claude Code, or manually:
+
+```bash
+cd .cortex-engine && git pull
+```
+
+Then re-copy methodology files (Step 3 above) and re-bootstrap:
+
+```bash
+cd .cortex-engine && python -m cli bootstrap --force --root ..
+cd .cortex-engine && python -m cli index --root ..
+```
+
+## Agent System
+
+Cortex ships with 6 agents, 29+ skills, 14 templates, 6 checklists.
 
 **With Claude Code:**
 ```
@@ -100,145 +162,58 @@ This chunks methodology resources into Cortex for on-demand retrieval by agents.
 Read agents/modes/architect.md and adopt that persona fully.
 ```
 
-See `agents/README.md` for full agent documentation.
-
-### Step 5: Verify Installation
-
-```bash
-python -m cli status
-```
-
-You should see:
-```
-Cortex Status
-=============
-
-Status: INITIALIZED
-
-Chunks: 0 total
-Memories: 0 total
-...
-```
-
-## First Use
-
-### Chunk Your Documentation
-
-```bash
-python -m cli chunk --path docs/
-python -m cli index
-```
-
-### Test Retrieval
-
-```bash
-python -m cli retrieve --query "your search term"
-```
-
-### Build a Context Frame
-
-```bash
-python -m cli assemble --task "Your task description"
-```
-
-### Check for Stale Chunks
-
-```bash
-# Status shows stale chunks if source files changed
-python -m cli status
-
-# Refresh stale chunks
-python -m cli chunk --path docs/file.md --refresh
-python -m cli index
-```
-
-## CLI Commands Reference
-
-| Command | Purpose |
-|---------|---------|
-| `python -m cli init` | Initialize Cortex |
-| `python -m cli status` | Show status and stale chunks |
-| `python -m cli chunk --path X` | Chunk documents |
-| `python -m cli chunk --path X --refresh` | Refresh stale chunks |
-| `python -m cli index` | Build/rebuild indices |
-| `python -m cli retrieve --query X` | Search for context |
-| `python -m cli assemble --task X` | Build context frame |
-| `python -m cli memory add --learning X` | Add a memory |
-| `python -m cli memory list` | List memories |
-| `python -m cli extract --text X` | Extract learnings |
-| `python -m cli bootstrap` | Chunk methodology into Cortex |
+See `agents/README.md` for full documentation.
 
 ## Troubleshooting
+
+### "No module named cli"
+You're running from the wrong directory. Run from `.cortex-engine/`:
+```bash
+cd .cortex-engine && python -m cli status --root ..
+```
 
 ### "Python not found"
 Install Python 3.8+ and ensure it's in your PATH.
 
 ### "No module named 'typer'"
 ```bash
-pip install -r requirements.txt
-```
-
-### "No module named 'sentence_transformers'"
-```bash
-pip install sentence-transformers numpy tiktoken
+pip install -r .cortex-engine/requirements.txt
 ```
 
 ### "Model download fails"
 The e5-small-v2 model downloads from HuggingFace. Check your internet connection. The model caches at `~/.cache/huggingface/`.
 
 ### "Cortex not initialized"
-Run `python -m cli init` first.
-
-### "Stale chunks detected"
-Source files have changed since chunking. Refresh with:
 ```bash
-python -m cli chunk --path <file> --refresh
-python -m cli index
+cd .cortex-engine && python -m cli init --root ..
 ```
 
-## Updating Cortex
-
+### "Stale chunks detected"
 ```bash
-cd cortex
-git pull origin main
-
-# Re-install dependencies if requirements.txt changed
-pip install -r requirements.txt
+cd .cortex-engine && python -m cli chunk --path <file> --refresh --root ..
+cd .cortex-engine && python -m cli index --root ..
 ```
 
 ## Uninstalling
 
-To remove Cortex from a project:
-
 ```bash
-# Remove runtime data
-rm -rf .cortex/
+# Remove engine and runtime data
+rm -rf .cortex-engine/ .cortex/
 
-# Remove Cortex folder (if copied)
-rm -rf cortex/
+# Remove methodology files (optional)
+rm -rf agents/ .claude/commands/ CLAUDE.md
 ```
 
-To remove from global Claude Code rules, edit `~/.claude/CLAUDE.md` and remove the "Cortex Context Management" section.
+To remove global rules, edit `~/.claude/CLAUDE.md` and remove the Cortex sections.
 
-## Migrating from v1.3.0
+## Migrating from v2.0.0
 
-If upgrading from v1.3.0:
+If upgrading from v2.0.0:
 
-1. Pull latest: `git pull origin main`
-2. New QA agent, 29 skills, checklists, and templates are available immediately
-3. Run bootstrap to index methodology: `python -m cli bootstrap && python -m cli index`
-4. All existing agents updated with Rules and Skills sections
-5. Optionally update global CLAUDE.md with v2.0.0 references
-
----
-
-## Migrating from v1.1.0
-
-If upgrading from v1.1.0 (PowerShell scripts):
-
-1. Install new dependencies: `pip install -r requirements.txt`
-2. Replace PowerShell commands with Python CLI equivalents
-3. Update global CLAUDE.md with v1.2.0 Cortex section
-4. Existing chunks and memories remain compatible
-
-See `scripts/README.md` for full command mapping.
+1. Clone engine: `git clone https://github.com/nivanovsp/cortex.git .cortex-engine`
+2. Install deps: `pip install -r .cortex-engine/requirements.txt`
+3. Re-copy methodology files (Step 3 above)
+4. Re-bootstrap: `cd .cortex-engine && python -m cli bootstrap --force --root ..`
+5. Rebuild index: `cd .cortex-engine && python -m cli index --root ..`
+6. Update `~/.claude/CLAUDE.md` from `global/CLAUDE.md`
+7. Add `.cortex-engine/` to `.gitignore`

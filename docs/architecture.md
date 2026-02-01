@@ -1,6 +1,6 @@
 # Cortex Architecture
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 
 ## Overview
 
@@ -11,6 +11,7 @@ Cortex is an LLM-native context management system built on the principle that LL
 - **Minimal context consumption** - Only load what's needed for the current task
 - **Content freshness** - Track source changes and detect stale chunks (v1.2.0)
 - **Complete methodology** - 6 agents, 29 skills, 14 templates, 6 checklists with decentralized orchestration (v2.0.0)
+- **Standalone installation** - Clone-and-run setup via `cortex init` with engine in `.cortex-engine/` (v2.1.0)
 
 ## System Architecture
 
@@ -341,7 +342,7 @@ retrieval_count: 0
 | Retrieve top-k | O(n) | <1ms for 500 vectors |
 | Assemble context | O(k) | ~100ms |
 
-## CLI Layer (v1.2.0)
+## CLI Layer (v2.1.0)
 
 The CLI layer (`cli/`) provides a cross-platform interface using Python and Typer.
 
@@ -370,6 +371,21 @@ cli/
 - **Thin wrapper**: Commands call core modules directly
 - **Lazy imports**: Core modules loaded only when needed
 - **Natural defaults**: Sensible defaults, minimal required args
+- **Engine-relative imports**: `core/` resolved via `Path(__file__)`, not project root (v2.1.0)
+
+### Invocation Patterns (v2.1.0)
+
+**Installed projects** (engine in `.cortex-engine/`):
+```bash
+cd .cortex-engine && python -m cli <command> --root ..
+```
+
+**Development** (inside Cortex repo):
+```bash
+python -m cli <command>
+```
+
+The `--root` parameter tells all commands where the project lives (`.cortex/`, `agents/`, etc.). The engine resolves `core/` relative to its own location via `Path(__file__).resolve().parent.parent.parent`.
 
 ---
 
@@ -601,4 +617,51 @@ python -m cli index              # Rebuild indices
 - **No Secrets**: Never chunk files containing API keys or credentials
 - **File Permissions**: `.cortex/` inherits project permissions
 
-*Cortex v2.0.0 - Complete Software Development Methodology*
+## Standalone Installation Architecture (v2.1.0)
+
+Cortex v2.1.0 enables standalone installation in any project via "cortex init".
+
+### Installation Layout
+
+```
+your-project/
+├── .cortex-engine/          # Cloned Cortex repo
+│   ├── cli/                 # CLI entry point
+│   ├── core/                # Python core modules
+│   ├── agents/              # Source of truth for methodology
+│   ├── global/              # Global CLAUDE.md template
+│   └── ...
+├── .cortex/                 # Runtime data (created by init)
+│   ├── chunks/
+│   ├── memories/
+│   └── index/
+├── agents/                  # Copied from .cortex-engine/
+├── .claude/commands/        # Copied from .cortex-engine/
+├── CLAUDE.md                # Copied from .cortex-engine/
+└── .gitignore               # Includes .cortex-engine/ and .cortex/
+```
+
+### Path Resolution
+
+All CLI commands resolve `core/` relative to the engine's own location:
+
+```python
+engine_root = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(engine_root))
+from core.config import Config
+```
+
+This allows the engine to live in `.cortex-engine/` while data (`.cortex/`) and methodology (`agents/`) live at the project root. The `--root` parameter controls where data and methodology are located.
+
+### Update Flow
+
+```
+cd .cortex-engine && git pull
+→ Re-copy agents/, .claude/, CLAUDE.md to project root
+→ cd .cortex-engine && python -m cli bootstrap --force --root ..
+→ cd .cortex-engine && python -m cli index --root ..
+```
+
+---
+
+*Cortex v2.1.0 - Complete Software Development Methodology*

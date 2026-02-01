@@ -18,7 +18,8 @@ def run(
 
     # Import core modules
     import sys
-    sys.path.insert(0, str(root))
+    engine_root = str(Path(__file__).resolve().parent.parent.parent)
+    sys.path.insert(0, engine_root)
 
     from core.extractor import extract_and_format, save_proposed_memories
 

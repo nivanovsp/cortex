@@ -17,7 +17,8 @@ def run(
 
     # Import core modules
     import sys
-    sys.path.insert(0, str(root))
+    engine_root = str(Path(__file__).resolve().parent.parent.parent)
+    sys.path.insert(0, engine_root)
 
     from core.config import Config
     from core.chunker import chunk_document, get_chunks_by_source, delete_chunks

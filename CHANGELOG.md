@@ -5,6 +5,53 @@ All notable changes to Cortex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-02-01
+
+### Added
+
+- **Standalone Installation** - `cortex init` works from any empty project folder
+  - Clones Cortex repo into `.cortex-engine/` automatically
+  - Installs Python dependencies
+  - Copies `agents/`, `.claude/commands/`, and `CLAUDE.md` into project
+  - Runs init → bootstrap → index → verify in sequence
+  - Adds `.cortex-engine/` and `.cortex/` to `.gitignore`
+
+- **Cortex Update** - `cortex update` pulls latest and re-bootstraps
+  - Pulls from GitHub into `.cortex-engine/`
+  - Re-copies methodology files to project root
+  - Re-bootstraps with `--force` and rebuilds indices
+
+- **Complete Global CLAUDE.md** - `global/CLAUDE.md` is now fully standalone
+  - Includes universal rules (RMS framework, conventions, protocols)
+  - Includes Critical Thinking Protocol (4 layers)
+  - Includes Cortex session protocol with `.cortex-engine` CLI pattern
+  - Includes Cortex Initialization and Update instructions
+  - No external dependencies (removed Neocortex/MLDA/Beads references)
+
+- **`/skills:cortex-init`** - Slash command for initialization (via global CLAUDE.md)
+
+### Changed
+
+- **CLI Path Resolution** - All commands now resolve `core/` relative to the engine location
+  - Uses `Path(__file__).resolve().parent.parent.parent` instead of project root
+  - Backward compatible — works the same when running from Cortex repo directly
+  - Enables running from `.cortex-engine/` with `--root ..`
+
+- **CLI Invocation Pattern** - Updated from `python -m cli <cmd>` to:
+  - Installed projects: `cd .cortex-engine && python -m cli <cmd> --root ..`
+  - Development (in Cortex repo): `python -m cli <cmd>` (unchanged)
+
+- **Session Protocol** - All CLI references updated for `.cortex-engine` pattern
+- **Project CLAUDE.md** - Updated CLI Reference with both invocation patterns
+- **Global CLAUDE.md** - Complete rewrite as standalone file
+- **`core/__init__.py`** - Version updated to 2.0.0
+
+### Fixed
+
+- `core/__init__.py` version was stuck at 1.2.0, now correctly reads 2.0.0
+
+---
+
 ## [2.0.0] - 2026-02-01
 
 ### Added

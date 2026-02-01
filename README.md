@@ -4,7 +4,7 @@
 
 Cortex is a self-contained methodology for LLM-powered software development. It provides expert agents, structured skills, artifact templates, and semantic context retrieval — everything needed to go from requirements to delivered software without external dependencies.
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 
 ## Key Features
 
@@ -23,96 +23,98 @@ Cortex is a self-contained methodology for LLM-powered software development. It 
 
 ## Installation
 
-### 1. Clone or Copy Cortex
+### Quick Setup (with Claude Code)
+
+1. **One-time:** Copy `global/CLAUDE.md` to `~/.claude/CLAUDE.md`
+2. **In any project folder:** Say "cortex init"
+
+That's it. The agent clones the repo, installs dependencies, copies files, and bootstraps everything.
+
+### Manual Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/nivanovsp/cortex.git
+# Clone engine into your project
+git clone https://github.com/nivanovsp/cortex.git .cortex-engine
 
-# Or copy to your project
-cp -r cortex/ your-project/
+# Install dependencies
+pip install -r .cortex-engine/requirements.txt
+
+# Copy methodology files (Windows)
+xcopy /E /I /Y .cortex-engine\agents agents
+xcopy /E /I /Y .cortex-engine\.claude .claude
+copy /Y .cortex-engine\CLAUDE.md CLAUDE.md
+
+# Copy methodology files (Mac/Linux)
+cp -r .cortex-engine/agents ./agents
+cp -r .cortex-engine/.claude ./.claude
+cp .cortex-engine/CLAUDE.md ./CLAUDE.md
+
+# Initialize, bootstrap, and index
+cd .cortex-engine && python -m cli init --root ..
+cd .cortex-engine && python -m cli bootstrap --root ..
+cd .cortex-engine && python -m cli index --root ..
+
+# Copy global rules (one-time)
+# Windows: copy .cortex-engine\global\CLAUDE.md %USERPROFILE%\.claude\CLAUDE.md
+# Mac/Linux: cp .cortex-engine/global/CLAUDE.md ~/.claude/CLAUDE.md
 ```
 
-### 2. Install Dependencies
-
-```bash
-cd cortex
-pip install -r requirements.txt
-```
-
-### 3. Add Global Claude Code Rules (Recommended)
-
-For full Claude Code integration, add the Cortex rules to your global CLAUDE.md:
-
-```bash
-# View the rules to add
-cat cortex/global/CLAUDE.md
-
-# Then manually add to: ~/.claude/CLAUDE.md
-```
-
-Or copy the contents of `global/CLAUDE.md` and append to your `~/.claude/CLAUDE.md`.
-
-### 4. Initialize in Your Project
-
-```bash
-cd your-project
-python -m cli init
-```
+See [INSTALL.md](INSTALL.md) for full details.
 
 ## Quick Start
 
 ```bash
-# Initialize Cortex in your project
-python -m cli init
+# All CLI commands run from .cortex-engine/ with --root pointing to project
+cd .cortex-engine
 
 # Chunk your documents
-python -m cli chunk --path docs/
+python -m cli chunk --path docs/ --root ..
 
 # Build the index
-python -m cli index
+python -m cli index --root ..
 
 # Build context frame for a task
-python -m cli assemble --task "Implement user authentication"
+python -m cli assemble --task "Implement user authentication" --root ..
 
 # Check status (including stale chunks)
-python -m cli status
+python -m cli status --root ..
 ```
 
 ## CLI Reference
 
+All commands run from `.cortex-engine/` with `--root ..`:
+
+```bash
+cd .cortex-engine && python -m cli <command> --root ..
+```
+
 ### Core Operations
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `init` | Initialize Cortex in project | `python -m cli init` |
-| `chunk` | Chunk documents into semantic units | `python -m cli chunk --path docs/` |
-| `index` | Build/rebuild vector indices | `python -m cli index` |
-| `retrieve` | Search for relevant context | `python -m cli retrieve --query "auth token"` |
-| `assemble` | Build context frame for a task | `python -m cli assemble --task "Fix login"` |
-| `status` | Show Cortex statistics | `python -m cli status` |
+| Command | Purpose |
+|---------|---------|
+| `init --root ..` | Initialize Cortex in project |
+| `chunk --path docs/ --root ..` | Chunk documents |
+| `chunk --path file.md --refresh --root ..` | Refresh stale chunks |
+| `index --root ..` | Build/rebuild vector indices |
+| `retrieve --query "auth token" --root ..` | Search for context |
+| `assemble --task "Fix login" --root ..` | Build context frame |
+| `status --root ..` | Show Cortex statistics |
+| `bootstrap --root ..` | Chunk methodology into Cortex |
 
 ### Memory Management
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `memory add` | Create a memory | `python -m cli memory add --learning "X requires Y" --domain AUTH` |
-| `memory list` | List all memories | `python -m cli memory list --domain AUTH` |
-| `memory delete` | Delete a memory | `python -m cli memory delete MEM-2026-01-26-001` |
+| Command | Purpose |
+|---------|---------|
+| `memory add --learning "X requires Y" --domain AUTH --root ..` | Create a memory |
+| `memory list --domain AUTH --root ..` | List memories |
+| `memory delete MEM-ID --root ..` | Delete a memory |
 
 ### Session & Extraction
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `extract` | Extract learnings from text | `python -m cli extract --text "Fixed by..."` |
-| `status --json` | JSON output for automation | `python -m cli status --json` |
-
-### Stale Chunk Management (v1.2.0)
-
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `status` | Shows stale chunks | `python -m cli status` |
-| `chunk --refresh` | Refresh stale chunks | `python -m cli chunk --path file.md --refresh` |
+| Command | Purpose |
+|---------|---------|
+| `extract --text "Fixed by..." --root ..` | Extract learnings |
+| `status --json --root ..` | JSON output for automation |
 
 ## Claude Code Integration
 
@@ -273,25 +275,22 @@ VERY END               → Instructions
 
 ```
 your-project/
-├── .cortex/              # Cortex data (created by init)
+├── .cortex-engine/       # Cloned Cortex repo (engine)
+│   ├── cli/              # Python CLI
+│   ├── core/             # Python core modules
+│   └── ...               # Full Cortex repo
+├── .cortex/              # Runtime data (created by init)
 │   ├── chunks/           # Chunked documents by domain
-│   │   └── AUTH/         # Domain-specific chunks
 │   ├── memories/         # Learnings from sessions
 │   └── index/            # Vector indices
-│       ├── chunks.pkl    # Chunk embeddings
-│       └── memories.pkl  # Memory embeddings
-├── cli/                  # Python CLI (cross-platform)
-│   ├── main.py           # Typer app entry point
-│   └── commands/         # Command implementations
-├── core/                 # Python core modules
-├── agents/               # Methodology resources (tool-agnostic)
+├── .claude/commands/     # Slash commands (copied from engine)
+├── agents/               # Methodology resources (copied from engine)
 │   ├── modes/            # Agent personas (6)
-│   ├── skills/           # Workflow skills (29)
+│   ├── skills/           # Workflow skills (32)
 │   ├── checklists/       # Phase validation checklists (6)
 │   └── templates/        # Artifact templates (14)
-├── scripts/              # PowerShell CLI (deprecated)
-├── templates/            # Chunk/memory templates
-└── docs/                 # Documentation
+├── CLAUDE.md             # Project-level instructions (copied)
+└── (your project files)
 ```
 
 ## Configuration
@@ -335,4 +334,4 @@ Dependencies:
 
 ---
 
-*Cortex v2.0.0 - Complete Software Development Methodology*
+*Cortex v2.1.0 - Complete Software Development Methodology*

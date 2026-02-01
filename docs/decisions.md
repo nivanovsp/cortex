@@ -704,3 +704,56 @@ Transform Cortex into a **complete, standalone software development methodology*
 - ~80 new files to maintain
 - Bootstrap step required after modifying methodology resources
 - Templates and checklists need iteration based on real usage
+
+---
+
+## ADR-019: Standalone Installation via .cortex-engine
+
+**Date:** 2026-02-01
+**Status:** Accepted
+**Version:** 2.1.0
+
+### Context
+
+Cortex v2.0.0 required users to clone the repo, manually copy files, install dependencies, and configure their global CLAUDE.md. Users who tried "cortex init" in a new project got "No module named cli" because the CLI wasn't present. The installation experience needed to be as simple as BMAD's `npx bmad-method install`.
+
+### Decision
+
+Implement a **clone-and-run installation** pattern:
+- "cortex init" (natural language) clones the Cortex repo into `.cortex-engine/`
+- Copies methodology files (`agents/`, `.claude/commands/`, `CLAUDE.md`) to project root
+- Runs `init → bootstrap → index` from `.cortex-engine/` with `--root ..`
+- "cortex update" pulls latest and re-bootstraps
+
+### Key Technical Changes
+
+1. **CLI path resolution** — `sys.path.insert` now uses `Path(__file__).resolve().parent.parent.parent` (engine root) instead of project root. This allows `core/` to be found when the engine is in `.cortex-engine/`.
+
+2. **CLI invocation pattern** — `cd .cortex-engine && python -m cli <cmd> --root ..` instead of `python -m cli <cmd>`.
+
+3. **Global CLAUDE.md** — Rewritten as complete standalone file with init/update instructions baked in.
+
+### Alternatives Considered
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| pip install | Clean, system-wide | Packaging work, where do agents go? |
+| Central clone (~/.cortex/engine) | Single copy | Complex path management |
+| **Clone per project (.cortex-engine/)** | Simple, self-contained, same as BMAD | Duplicated per project |
+
+### Rationale
+
+Clone-per-project is the simplest approach that works without packaging infrastructure. It mirrors BMAD's pattern where each project gets its own copy. The trade-off (duplication) is acceptable — engine code is small and updates are a simple `git pull`.
+
+### Consequences
+
+**Positive:**
+- "cortex init" works from any empty folder
+- No pip packaging needed
+- Each project is self-contained
+- Updates via `git pull`
+
+**Negative:**
+- Engine duplicated per project (~10MB)
+- `.cortex-engine/` should be in `.gitignore`
+- CLI invocation is longer (`cd .cortex-engine && ...`)
