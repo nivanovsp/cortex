@@ -10,11 +10,11 @@
 
 **Cortex** is a complete, self-contained software development methodology with LLM-native context management. It provides expert agents, structured skills, templates, and semantic retrieval — everything needed to go from requirements to delivered software.
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 
 ---
 
-## Session Protocol (v2.0.0)
+## Session Protocol (v2.1.0)
 
 This protocol defines how you (the agent) interact with Cortex throughout a session. Follow these instructions automatically — users should not need to know about commands.
 
@@ -242,7 +242,7 @@ python -m cli <command>
 
 ---
 
-## Agent System (v2.0.0)
+## Agent System (v2.1.0)
 
 Cortex ships with a complete agent system — expert personas with dedicated skills, templates, and quality checklists. See `agents/README.md` for full details.
 
