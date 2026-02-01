@@ -1,8 +1,8 @@
 # Cortex: LLM-Native Context Management
 
 **Status**: Specification
-**Version**: 1.2.0
-**Date**: 2026-01-27
+**Version**: 1.3.0
+**Date**: 2026-02-01
 **Author**: Claude (Architect Mode)
 
 ---
@@ -29,6 +29,8 @@
 5. [Implementation Plan](#5-implementation-plan)
 6. [Risk Assessment](#6-risk-assessment)
 7. [Technical Decisions](#7-technical-decisions)
+8. [Session Protocol](#8-session-protocol-v110)
+9. [Agent Orchestration Layer](#9-agent-orchestration-layer-v130)
 
 ---
 
@@ -819,4 +821,92 @@ The `--refresh` flag:
 
 ---
 
-*Cortex v1.2.0 - LLM-Native Context Management*
+## 9. Agent Orchestration Layer (v1.3.0)
+
+### 9.1 Overview
+
+Cortex v1.3.0 adds an agent orchestration layer — expert modes that provide specialist personas on top of the core context management system.
+
+**Design Principles:**
+1. **Additive** — Modes layer on top; the session protocol (Layer 0) always runs
+2. **Tool-agnostic** — Specs in `agents/` work with any LLM tool
+3. **Zero context cost** — Modes don't consume Cortex retrieval budget
+4. **Single-source** — One spec per agent; Claude Code wrappers are thin references
+
+### 9.2 Two-Layer Architecture
+
+```
+Layer 0: Session Protocol (always active)
+  status → assemble → retrieve → extract
+
+Layer 1: Agent Mode (optional, user-activated)
+  persona + domain focus + specialized commands + structured output
+```
+
+When a mode is active, it adds persona-specific interpretation without changing the underlying protocol.
+
+### 9.3 Agent Modes
+
+| Mode | Focus | Primary Domains | Key Output |
+|------|-------|----------------|------------|
+| Analyst | Requirements, gaps | GENERAL, API, DB | Gap analyses, acceptance criteria |
+| Architect | System design | API, DB, DEV | Design docs, ADRs |
+| Developer | Implementation | All | Code, tests, fixes |
+| UX Designer | Interface design | UI | Component specs, user flows |
+| Orchestrator | Work planning | All | Phased work plans |
+
+### 9.4 Workflow Skills
+
+| Skill | Purpose | Output |
+|-------|---------|--------|
+| QA Gate | Quality validation | PASS/FAIL report |
+| Extract Learnings | Learning extraction | Classified memories for approval |
+
+### 9.5 Orchestrator Coordination
+
+The Orchestrator is a planning mode. It produces phased work plans where each phase names a specialist mode. The user activates modes sequentially.
+
+```
+Orchestrator output:
+  Phase 1: /modes:analyst    → Clarify requirements
+  Phase 2: /modes:architect  → Design solution
+  Phase 3: /modes:developer  → Implement
+  Phase 4: /skills:qa-gate   → Validate
+```
+
+### 9.6 File Structure
+
+```
+agents/                              # Source of truth (tool-agnostic)
+├── README.md
+├── modes/*.md                       # 5 specialist personas
+└── skills/*.md                      # 2 workflow skills
+
+.claude/commands/                    # Claude Code wrappers (~4 lines each)
+├── modes/*.md                       # "Read agents/modes/{name}.md, adopt persona"
+└── skills/*.md                      # "Read agents/skills/{name}.md, execute skill"
+```
+
+### 9.7 Mode Activation
+
+**Claude Code:**
+```
+/modes:architect
+```
+
+**Other LLM tools:**
+```
+Read agents/modes/architect.md and adopt that persona fully.
+Follow all instructions for the remainder of this conversation.
+```
+
+### 9.8 Universal Mode Commands
+
+All modes support:
+- `*help` — Show mode-specific commands
+- `*exit` — Leave the current mode
+- `*context` — Show gathered Cortex context summary
+
+---
+
+*Cortex v1.3.0 - LLM-Native Context Management*

@@ -5,6 +5,47 @@ All notable changes to Cortex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-01
+
+### Added
+
+- **Agent Orchestration Layer** - Expert agent modes bundled with Cortex
+  - 5 specialist modes: Analyst, Architect, Developer, UX Designer, Orchestrator
+  - 2 workflow skills: QA Gate, Extract Learnings
+  - Tool-agnostic specs in `agents/` directory
+  - Claude Code slash commands via `.claude/commands/`
+
+- **Agent Modes**
+  - `/modes:analyst` - Requirements analysis, gap identification, acceptance criteria
+  - `/modes:architect` - System design, trade-offs, architecture decision records
+  - `/modes:developer` - Implementation, debugging, code review
+  - `/modes:ux-designer` - Interface design, accessibility, user flows
+  - `/modes:orchestrator` - Work planning, phase coordination across modes
+
+- **Workflow Skills**
+  - `/skills:qa-gate` - Structured quality validation checklist
+  - `/skills:extract-learnings` - Guided session learning extraction
+
+- **Two-Layer Architecture**
+  - Layer 0: Session Protocol (always active, unchanged from v1.2.0)
+  - Layer 1: Agent Mode (optional, adds persona and domain focus)
+
+- **Tool-Agnostic Design**
+  - Agent specs in `agents/modes/*.md` work with any LLM tool
+  - Claude Code wrappers in `.claude/commands/` for slash command support
+
+- **New ADR**
+  - ADR-017: Agent Orchestration Layer
+
+### Changed
+
+- **CLAUDE.md** - Added Agent Modes section with available modes and suggestions
+- **global/CLAUDE.md** - Added agent modes reference
+- **README.md** - Added Agent Modes feature section
+- **Documentation** - All docs updated for v1.3.0
+
+---
+
 ## [1.2.0] - 2026-01-27
 
 ### Added

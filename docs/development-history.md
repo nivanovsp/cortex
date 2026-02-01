@@ -304,3 +304,72 @@ cli/
 ---
 
 *Cortex v1.2.0 - Development completed 2026-01-27*
+
+---
+
+## v1.3.0 - Agent Orchestration Layer
+
+**Date:** 2026-02-01
+**Objective:** Bundle agent modes and workflow skills so Cortex ships as a complete package
+
+### Background
+
+Cortex v1.2.0 provided the core context management system — chunking, embedding, retrieval, assembly, and a session protocol. However, the agent orchestration layer (specialist personas like Architect, Analyst, etc.) lived only in the developer's personal `~/.claude/CLAUDE.md`. Anyone who cloned the repo got the tools but not the agent-driven experience.
+
+### Design Decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Spec location | `agents/` directory | Tool-agnostic, anyone can use |
+| Claude Code integration | `.claude/commands/` thin wrappers | Slash commands with no duplication |
+| Orchestrator model | Planning mode, not runtime coordinator | Claude Code is single-agent |
+| Layer architecture | Session protocol (L0) + Agent mode (L1) | Additive, not replacement |
+
+### Deliverables
+
+#### Agent Specs (`agents/`)
+```
+agents/
+├── README.md
+├── modes/
+│   ├── analyst.md
+│   ├── architect.md
+│   ├── developer.md
+│   ├── ux-designer.md
+│   └── orchestrator.md
+└── skills/
+    ├── qa-gate.md
+    └── extract-learnings.md
+```
+
+#### Claude Code Wrappers (`.claude/commands/`)
+```
+.claude/commands/
+├── modes/
+│   ├── analyst.md
+│   ├── architect.md
+│   ├── developer.md
+│   ├── ux-designer.md
+│   └── orchestrator.md
+└── skills/
+    ├── qa-gate.md
+    └── extract-learnings.md
+```
+
+#### Documentation
+- Updated all existing docs for v1.3.0
+- Added ADR-017: Agent Orchestration Layer
+- New `docs/release-notes-v1.3.0.md`
+- New `docs/session-protocol-v1.3.0.md`
+
+### Verification
+
+- [x] Agent specs are self-contained and tool-agnostic
+- [x] Claude Code wrappers reference specs (no duplication)
+- [x] Session protocol unchanged (Layer 0 still works alone)
+- [x] All docs updated with v1.3.0 references
+- [x] ADR-017 documents the architectural decision
+
+---
+
+*Cortex v1.3.0 - Development completed 2026-02-01*

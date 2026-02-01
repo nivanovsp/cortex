@@ -591,3 +591,63 @@ Expert review noted: if retrieval returns poor results, there's no mechanism to 
 ### Conclusion
 
 Human-in-the-loop query refinement is simpler and equally effective.
+
+---
+
+## ADR-017: Agent Orchestration Layer
+
+**Date:** 2026-02-01
+**Status:** Accepted
+**Version:** 1.3.0
+
+### Context
+
+Cortex provided the core context management system (chunking, embedding, retrieval, assembly) and a session protocol for natural language interaction. However, users who cloned the repo got only the CLI tool — no agent personas, no structured workflows, no orchestration patterns. The agent layer existed only in the developer's personal `~/.claude/CLAUDE.md`.
+
+### Decision
+
+Bundle an **Agent Orchestration Layer** directly in the Cortex repo with:
+- 5 specialist modes (Analyst, Architect, Developer, UX Designer, Orchestrator)
+- 2 workflow skills (QA Gate, Extract Learnings)
+- Tool-agnostic specs in `agents/` with Claude Code thin wrappers in `.claude/commands/`
+
+### Architecture
+
+**Single-source with thin wrappers:**
+- Source of truth: `agents/modes/*.md` (tool-agnostic, any LLM tool can use)
+- Claude Code integration: `.claude/commands/modes/*.md` (~4 lines each, reference the spec)
+- No duplication — one file to maintain per agent
+
+**Two-layer design:**
+- Layer 0: Session Protocol (unchanged, always active)
+- Layer 1: Agent Mode (optional, adds persona lens)
+
+### Rationale
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| No agents (v1.2.0) | Simple | Incomplete package, manual workflow |
+| Claude Code only | Works out of box for CC users | Excludes other tools |
+| Tool-agnostic only | Universal | No slash command convenience |
+| **Both (v1.3.0)** | Universal + convenient | Two file locations (mitigated by thin wrappers) |
+
+### Orchestrator Design
+
+The Orchestrator is a **planning mode**, not a runtime coordinator. Claude Code is single-agent, so the Orchestrator:
+1. Analyzes scope and produces a phased work plan
+2. Assigns each phase to a specialist mode
+3. User activates modes sequentially
+4. Progress tracked via Cortex memories
+
+### Consequences
+
+**Positive:**
+- Cortex ships as a complete package
+- Works with Claude Code and any other LLM tool
+- Zero context cost (modes don't consume retrieval budget)
+- Modes are optional — core system works without them
+
+**Negative:**
+- More files to maintain (7 specs + 7 wrappers)
+- Orchestrator coordination is manual (user switches modes)
+- Mode persistence depends on conversation context (may drift in long sessions)

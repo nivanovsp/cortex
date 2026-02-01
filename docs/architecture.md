@@ -1,6 +1,6 @@
 # Cortex Architecture
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 
 ## Overview
 
@@ -10,12 +10,13 @@ Cortex is an LLM-native context management system built on the principle that LL
 - **Semantic retrieval** - Content found via embedding similarity, not manual links
 - **Minimal context consumption** - Only load what's needed for the current task
 - **Content freshness** - Track source changes and detect stale chunks (v1.2.0)
+- **Agent orchestration** - Specialist modes layered on top of the core system (v1.3.0)
 
 ## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         CORTEX SYSTEM (v1.2.0)                       │
+│                         CORTEX SYSTEM (v1.3.0)                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  ┌────────────────────────────────────────────────────────────┐     │
@@ -468,6 +469,87 @@ The agent detects user intent through natural language patterns:
 | Retrieval | Natural | "What do we know about...", "Tell me about..." |
 | Retrieval | Explicit | "cortex: {query}" |
 | Session End | User command | "Update learning", "Save learnings" |
+
+---
+
+## Agent Orchestration Layer (v1.3.0)
+
+Cortex v1.3.0 adds an agent orchestration layer — expert modes that layer on top of the session protocol.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    AGENT ORCHESTRATION (v1.3.0)                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌────────────────────────────────────────────────────────────┐     │
+│  │               LAYER 1: AGENT MODE (optional)               │     │
+│  │                                                            │     │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │     │
+│  │  │ Analyst  │ │ Architect│ │Developer │ │ UX       │    │     │
+│  │  │          │ │          │ │          │ │ Designer │    │     │
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘    │     │
+│  │                    ┌──────────┐                           │     │
+│  │                    │Orchestr. │  (plans which mode next)  │     │
+│  │                    └──────────┘                           │     │
+│  └────────────────────────────┬───────────────────────────────┘     │
+│                               │                                      │
+│                               ▼                                      │
+│  ┌────────────────────────────────────────────────────────────┐     │
+│  │               LAYER 0: SESSION PROTOCOL (always)           │     │
+│  │                                                            │     │
+│  │  status ──► assemble ──► retrieve ──► extract              │     │
+│  └────────────────────────────┬───────────────────────────────┘     │
+│                               │                                      │
+│                               ▼                                      │
+│  ┌────────────────────────────────────────────────────────────┐     │
+│  │               CORE SYSTEM                                  │     │
+│  │  Chunker → Embedder → Indexer → Retriever → Assembler     │     │
+│  └────────────────────────────────────────────────────────────┘     │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Design Principles
+
+- **Additive, not replacement** — Modes layer on top; the session protocol always runs
+- **Single-source specs** — Agent definitions in `agents/` are the source of truth
+- **Tool-agnostic** — Specs work with any LLM tool; Claude Code wrappers are thin
+- **Zero context cost** — Modes don't consume Cortex retrieval budget
+- **Planning, not spawning** — Orchestrator plans phases; user activates modes
+
+### File Structure
+
+```
+agents/                              # Tool-agnostic specs (source of truth)
+├── README.md
+├── modes/
+│   ├── analyst.md
+│   ├── architect.md
+│   ├── developer.md
+│   ├── ux-designer.md
+│   └── orchestrator.md
+└── skills/
+    ├── qa-gate.md
+    └── extract-learnings.md
+
+.claude/commands/                    # Claude Code thin wrappers
+├── modes/{name}.md                  # "Read agents/modes/{name}.md, adopt persona"
+└── skills/{name}.md                 # "Read agents/skills/{name}.md, execute skill"
+```
+
+### Mode Interaction with Core
+
+Each mode specifies which Cortex commands and memory domains it prioritizes:
+
+| Mode | Primary Domains | Primary Commands |
+|------|----------------|-----------------|
+| Analyst | GENERAL, API, DB | retrieve, assemble |
+| Architect | API, DB, DEV | retrieve, assemble, memory add |
+| Developer | All | All commands |
+| UX Designer | UI | retrieve, assemble, memory add |
+| Orchestrator | All | retrieve, assemble, memory add |
 
 ---
 

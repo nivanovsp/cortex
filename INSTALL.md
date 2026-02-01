@@ -1,6 +1,6 @@
 # Cortex Installation Guide
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 
 ## Prerequisites
 
@@ -71,6 +71,27 @@ This enables:
 - Seamless retrieval without running commands
 - Stale chunk detection and refresh workflow
 - User-triggered learning extraction ("Update learning")
+- Agent mode references (see Step 5)
+
+### Step 5: Agent Modes (Included)
+
+Agent modes are bundled with Cortex and work immediately:
+
+**With Claude Code:**
+```
+/modes:architect
+/modes:analyst
+/modes:developer
+/modes:ux-designer
+/modes:orchestrator
+```
+
+**With other LLM tools:**
+```
+Read agents/modes/architect.md and adopt that persona fully.
+```
+
+See `agents/README.md` for full agent documentation.
 
 ### Step 5: Verify Installation
 
@@ -188,6 +209,16 @@ rm -rf cortex/
 ```
 
 To remove from global Claude Code rules, edit `~/.claude/CLAUDE.md` and remove the "Cortex Context Management" section.
+
+## Migrating from v1.2.0
+
+If upgrading from v1.2.0:
+
+1. Pull latest: `git pull origin main`
+2. Agent modes are available immediately — no extra setup
+3. Optionally update global CLAUDE.md with agent modes reference
+
+---
 
 ## Migrating from v1.1.0
 

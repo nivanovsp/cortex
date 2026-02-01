@@ -28,5 +28,6 @@ Thumbs.db
 
 # Local tracking/config
 .beads/
-.claude/
+.claude/*
+!.claude/commands/
 nul

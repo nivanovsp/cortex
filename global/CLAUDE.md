@@ -142,6 +142,20 @@ When using both Cortex and Beads:
 4. User says "update learning" → run extraction
 5. `bd close` when complete
 
+### Agent Modes
+
+Cortex includes agent modes for specialized workflows. Activate with `/modes:{name}` in Claude Code, or point any LLM tool at `agents/modes/{name}.md`.
+
+| Mode | Focus |
+|------|-------|
+| `analyst` | Requirements, gap analysis |
+| `architect` | System design, ADRs |
+| `developer` | Implementation, debugging |
+| `ux-designer` | Interface design, accessibility |
+| `orchestrator` | Work planning, phase coordination |
+
+Skills: `/skills:qa-gate` (quality check), `/skills:extract-learnings` (save session learnings)
+
 ### Key Principles
 
 - **Position matters**: Critical info at start/end (LLM attention is U-shaped)

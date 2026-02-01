@@ -195,6 +195,45 @@ These commands are called automatically by the session protocol. Users should no
 
 ---
 
+## Agent Modes
+
+Cortex includes agent modes — expert personas that layer on top of the session protocol. See `agents/README.md` for full details.
+
+### Available Modes
+
+| Mode | Activation | Focus |
+|------|-----------|-------|
+| Analyst | `/modes:analyst` | Requirements, gap analysis |
+| Architect | `/modes:architect` | System design, trade-offs, ADRs |
+| Developer | `/modes:developer` | Implementation, debugging, review |
+| UX Designer | `/modes:ux-designer` | Interface design, accessibility |
+| Orchestrator | `/modes:orchestrator` | Work planning, phase coordination |
+
+### Available Skills
+
+| Skill | Activation | Purpose |
+|-------|-----------|---------|
+| QA Gate | `/skills:qa-gate` | Quality validation checklist |
+| Extract Learnings | `/skills:extract-learnings` | Session learning extraction |
+
+### How Modes Work
+
+- Modes are **Layer 1** on top of the session protocol (Layer 0)
+- The session protocol continues running (status, assemble, retrieve, extract)
+- The mode adds persona-specific behavior, domain focus, and specialized commands
+- All modes support `*help`, `*exit`, and `*context` commands
+- Specs live in `agents/modes/` (tool-agnostic) with thin wrappers in `.claude/commands/modes/` (Claude Code)
+
+### When to Suggest Modes
+
+- If the user's task involves requirements analysis → suggest `/modes:analyst`
+- If the task involves system design or architectural decisions → suggest `/modes:architect`
+- If the task involves UI/interaction design → suggest `/modes:ux-designer`
+- If the task is complex with multiple phases → suggest `/modes:orchestrator`
+- For implementation work, the default session protocol is usually sufficient; suggest `/modes:developer` only if the user wants the full structured workflow
+
+---
+
 ## Important Notes
 
 - **Index Rebuild**: After adding chunks or memories, run `python -m cli index`

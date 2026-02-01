@@ -2,19 +2,20 @@
 
 A comprehensive guide to using Cortex for LLM-native context management.
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
 2. [Natural Language Usage](#natural-language-usage)
-3. [Document Management](#document-management)
-4. [Stale Chunk Detection](#stale-chunk-detection) **(New in v1.2.0)**
-5. [Memory System](#memory-system)
-6. [Context Assembly](#context-assembly)
-7. [Session Workflow](#session-workflow)
-8. [Best Practices](#best-practices)
-9. [Troubleshooting](#troubleshooting)
+3. [Agent Modes](#agent-modes) **(New in v1.3.0)**
+4. [Document Management](#document-management)
+5. [Stale Chunk Detection](#stale-chunk-detection)
+6. [Memory System](#memory-system)
+7. [Context Assembly](#context-assembly)
+8. [Session Workflow](#session-workflow)
+9. [Best Practices](#best-practices)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -113,6 +114,81 @@ The agent will:
 | "cortex: {X}" | Explicit retrieval for X |
 | "Update learning" | Extracts session learnings |
 | "Save learnings" | Extracts session learnings |
+
+---
+
+## Agent Modes
+
+**(New in v1.3.0)** Cortex includes specialist agent modes that provide expert personas for different types of work.
+
+### Available Modes
+
+| Mode | What It Does | Activate |
+|------|-------------|----------|
+| **Analyst** | Requirements analysis, gap identification, acceptance criteria | `/modes:analyst` |
+| **Architect** | System design, trade-off analysis, ADRs | `/modes:architect` |
+| **Developer** | Implementation, debugging, code review | `/modes:developer` |
+| **UX Designer** | Interface design, accessibility, user flows | `/modes:ux-designer` |
+| **Orchestrator** | Work planning, phase coordination | `/modes:orchestrator` |
+
+### Using Modes
+
+**With Claude Code:**
+```
+/modes:architect
+```
+
+**With other LLM tools:**
+```
+Read agents/modes/architect.md and adopt that persona fully.
+```
+
+### How Modes Work
+
+Modes add a specialist lens on top of the normal session protocol:
+
+```
+Without mode:
+  You talk → Agent uses Cortex → Answers generically
+
+With /modes:architect:
+  You talk → Agent uses Cortex → Answers as architect
+  (design focus, trade-off analysis, structured output)
+```
+
+The session protocol (auto status, auto assemble, auto retrieve) still runs. The mode just changes how the agent interprets and presents information.
+
+### Mode Commands
+
+All modes support:
+- `*help` — See mode-specific commands
+- `*exit` — Leave the mode
+- `*context` — Show Cortex context summary
+
+Each mode also has specific commands (e.g., `*design`, `*analyze`, `*flow`). Use `*help` after activating a mode to see them.
+
+### Workflow Skills
+
+Skills are one-shot workflows (not persistent personas):
+
+| Skill | What It Does | Activate |
+|-------|-------------|----------|
+| **QA Gate** | Quality validation checklist | `/skills:qa-gate` |
+| **Extract Learnings** | Guided learning extraction | `/skills:extract-learnings` |
+
+### Recommended Workflow for Complex Tasks
+
+For multi-phase work, start with the Orchestrator:
+
+```
+1. /modes:orchestrator     → Get a phased plan
+2. /modes:analyst          → Phase 1: Clarify requirements
+3. /modes:architect        → Phase 2: Design solution
+4. /modes:developer        → Phase 3: Implement
+5. /skills:qa-gate         → Phase 4: Validate quality
+```
+
+---
 
 ### When to Use CLI Directly
 
@@ -489,3 +565,4 @@ python -m cli index
 - Check `docs/cortex-spec.md` for full technical details
 - Check `docs/architecture.md` for system design
 - Check `CLAUDE.md` for Claude Code specific guidance
+- Check `agents/README.md` for agent mode documentation

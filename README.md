@@ -4,10 +4,11 @@
 
 Cortex is a methodology for managing documentation and context in LLM-powered development workflows. It's designed around how LLMs actually process information, not human cognitive metaphors.
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 
 ## Key Features
 
+- **Agent modes** - Specialist personas (analyst, architect, developer, UX, orchestrator) **(New in v1.3.0)**
 - **Natural language interaction** - Just talk, agent handles commands automatically
 - **Cross-platform CLI** - Python-based, works on Windows, Mac, Linux **(New in v1.2.0)**
 - **Stale chunk detection** - Tracks source file changes automatically **(New in v1.2.0)**
@@ -172,6 +173,42 @@ For power users who prefer direct CLI control:
 | **Medium** | Reasonable inference, discoveries | No |
 | **Low** | Uncertain, needs verification | No |
 
+## Agent Modes
+
+Cortex ships with expert agent personas that provide specialized workflows on top of the core system.
+
+| Mode | Focus | Activation |
+|------|-------|-----------|
+| **Analyst** | Requirements, gap analysis, acceptance criteria | `/modes:analyst` |
+| **Architect** | System design, trade-offs, ADRs | `/modes:architect` |
+| **Developer** | Implementation, debugging, code review | `/modes:developer` |
+| **UX Designer** | Interface design, accessibility, user flows | `/modes:ux-designer` |
+| **Orchestrator** | Work planning, phase coordination | `/modes:orchestrator` |
+
+**Skills:** `/skills:qa-gate` (quality checklist) | `/skills:extract-learnings` (save session learnings)
+
+### With Claude Code
+
+Modes are available as slash commands out of the box:
+
+```
+/modes:orchestrator    → Plan a complex task
+/modes:architect       → Design the solution
+/modes:developer       → Implement it
+/skills:qa-gate        → Validate quality
+```
+
+### With Other LLM Tools
+
+Point your tool at the spec file in `agents/modes/`:
+
+```
+Read agents/modes/architect.md and adopt that persona fully.
+Follow all instructions for the remainder of this conversation.
+```
+
+See [agents/README.md](agents/README.md) for full documentation.
+
 ## How It Works
 
 ```
@@ -220,6 +257,9 @@ your-project/
 │   ├── main.py           # Typer app entry point
 │   └── commands/         # Command implementations
 ├── core/                 # Python core modules
+├── agents/               # Agent mode specs (tool-agnostic)
+│   ├── modes/            # Specialist personas
+│   └── skills/           # Workflow skills
 ├── scripts/              # PowerShell CLI (deprecated)
 ├── templates/            # Chunk/memory templates
 └── docs/                 # Documentation
@@ -261,8 +301,9 @@ Dependencies:
 - [Full Specification](docs/cortex-spec.md) - Complete technical details
 - [Architecture](docs/architecture.md) - System design
 - [Decisions](docs/decisions.md) - Architecture decision records
+- [Agent Modes](agents/README.md) - Agent system documentation
 - [Changelog](CHANGELOG.md) - Version history
 
 ---
 
-*Cortex v1.2.0 - LLM-Native Context Management*
+*Cortex v1.3.0 - LLM-Native Context Management*
