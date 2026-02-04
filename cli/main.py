@@ -13,6 +13,18 @@ Usage:
     python -m cli status
 """
 
+import sys
+import os
+
+# Fix Windows console encoding to UTF-8
+# This prevents UnicodeEncodeError when outputting non-ASCII characters
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import typer
 from typing import Optional
 from pathlib import Path
