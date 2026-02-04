@@ -1,6 +1,5 @@
 """cortex extract - Extract learnings from session text."""
 
-import json
 from pathlib import Path
 from typing import Optional
 
@@ -23,7 +22,7 @@ def run(
 
     from core.extractor import extract_and_format, save_proposed_memories
 
-    result = extract_and_format(text, str(root))
+    result = extract_and_format(text, project_root=str(root))
 
     typer.echo("Extracted Learnings:")
     typer.echo("=" * 40)
@@ -42,7 +41,7 @@ def run(
         typer.echo()
 
     if auto_save:
-        saved = save_proposed_memories(memories, str(root))
+        saved = save_proposed_memories(memories, project_root=str(root))
         typer.echo(f"Saved {len(saved)} memories.")
     else:
         typer.echo("Use --auto-save to save these memories, or save selectively via 'cortex memory add'")

@@ -232,8 +232,38 @@ def extract_memories(
 
 def extract_and_format(
     text: str,
+    project_root: str = ".",
     min_confidence: str = "low"
-) -> str:
+) -> dict:
+    """
+    Extract memories and return as structured data.
+
+    Args:
+        text: Text to analyze
+        project_root: Project root directory (for future use)
+        min_confidence: Minimum confidence threshold
+
+    Returns:
+        Dict with 'memories' key containing list of memory dicts
+    """
+    proposed = extract_memories(text, min_confidence)
+
+    memories = []
+    for mem in proposed:
+        memories.append({
+            'learning': mem.learning,
+            'context': mem.context,
+            'type': mem.memory_type,
+            'confidence': mem.confidence,
+            'domain': mem.domain,
+            'trigger': mem.trigger,
+            'source_text': mem.source_text
+        })
+
+    return {'memories': memories, 'project_root': project_root}
+
+
+def format_proposed_memories(text: str, min_confidence: str = "low") -> str:
     """
     Extract memories and format for display.
 
@@ -267,18 +297,18 @@ def extract_and_format(
 
 
 def save_proposed_memories(
-    proposed: list[ProposedMemory],
-    indices: list[int],
+    memories: list,
     project_root: str = ".",
+    indices: Optional[list[int]] = None,
     source_session: Optional[str] = None
 ) -> list[str]:
     """
-    Save selected proposed memories.
+    Save proposed memories.
 
     Args:
-        proposed: List of proposed memories
-        indices: Indices of memories to save (1-based)
+        memories: List of memory dicts or ProposedMemory objects
         project_root: Project root directory
+        indices: Optional indices to save (1-based). If None, saves all.
         source_session: Session identifier
 
     Returns:
@@ -288,20 +318,40 @@ def save_proposed_memories(
 
     created_ids = []
 
-    for idx in indices:
-        if 1 <= idx <= len(proposed):
-            mem = proposed[idx - 1]
-            result = create_memory(
-                learning=mem.learning,
-                context=mem.context,
-                memory_type=mem.memory_type,
-                domain=mem.domain,
-                confidence=mem.confidence,
-                source_session=source_session,
-                trigger=mem.trigger,
-                project_root=project_root
-            )
-            created_ids.append(result.id)
+    # Determine which memories to save
+    if indices is None:
+        items_to_save = list(enumerate(memories, 1))
+    else:
+        items_to_save = [(idx, memories[idx - 1]) for idx in indices if 1 <= idx <= len(memories)]
+
+    for idx, mem in items_to_save:
+        # Handle both dict and ProposedMemory objects
+        if isinstance(mem, dict):
+            learning = mem.get('learning', '')
+            context = mem.get('context', '')
+            memory_type = mem.get('type', 'experiential')
+            domain = mem.get('domain', 'GENERAL')
+            confidence = mem.get('confidence', 'medium')
+            trigger = mem.get('trigger', '')
+        else:
+            learning = mem.learning
+            context = mem.context
+            memory_type = mem.memory_type
+            domain = mem.domain
+            confidence = mem.confidence
+            trigger = mem.trigger
+
+        result = create_memory(
+            learning=learning,
+            context=context,
+            memory_type=memory_type,
+            domain=domain,
+            confidence=confidence,
+            source_session=source_session,
+            trigger=trigger,
+            project_root=project_root
+        )
+        created_ids.append(result.id)
 
     return created_ids
 
@@ -324,4 +374,4 @@ if __name__ == "__main__":
     else:
         text = arg
 
-    print(extract_and_format(text))
+    print(format_proposed_memories(text))
