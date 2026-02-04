@@ -5,6 +5,22 @@ All notable changes to Cortex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-02-04
+
+### Fixed
+
+- **Extract Command API Mismatch** - CLI and core module had incompatible function signatures
+  - `extract_and_format()` now returns dict with `memories` key (was returning string)
+  - `extract_and_format()` now accepts `project_root` parameter
+  - `save_proposed_memories()` parameter order fixed: `(memories, project_root, indices)`
+  - `save_proposed_memories()` now accepts both dict and ProposedMemory objects
+  - `indices` parameter now optional (saves all memories if not specified)
+  - CLI uses explicit keyword arguments to prevent parameter order bugs
+
+- **Added `format_proposed_memories()`** - New function for CLI standalone text output
+
+---
+
 ## [2.1.0] - 2026-02-01
 
 ### Added

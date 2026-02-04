@@ -4,7 +4,7 @@ Cortex Core - LLM-Native Context Management
 Core modules for chunking, embedding, indexing, and retrieval.
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.1"
 
 # Lazy imports to avoid circular dependencies
 from .config import Config
@@ -31,6 +31,7 @@ __all__ = [
     'assemble_and_render',
     'extract_memories',
     'extract_and_format',
+    'format_proposed_memories',
     'save_proposed_memories',
 ]
 
@@ -97,6 +98,9 @@ def __getattr__(name):
     elif name == 'extract_and_format':
         from .extractor import extract_and_format
         return extract_and_format
+    elif name == 'format_proposed_memories':
+        from .extractor import format_proposed_memories
+        return format_proposed_memories
     elif name == 'save_proposed_memories':
         from .extractor import save_proposed_memories
         return save_proposed_memories

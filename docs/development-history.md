@@ -532,3 +532,46 @@ The global `~/.claude/CLAUDE.md` had grown to ~450 lines with three problems: ma
 - [x] Init/update intentionally in both files (bootstrap requirement)
 - [x] Global and distributable copy (`global/CLAUDE.md`) are identical
 - [x] Version consistent at 2.1.0 across all files
+
+---
+
+*Cortex v2.1.0 - Development completed 2026-02-01*
+
+---
+
+## v2.1.1 - Extract Command Bug Fix
+
+**Date:** 2026-02-04
+**Objective:** Fix API mismatch between CLI and core extractor module
+
+### Background
+
+User reported errors when running `extract` command from an installed project. Investigation revealed function signature mismatches between `cli/commands/extract.py` and `core/extractor.py`:
+
+1. CLI passed `project_root` as second positional arg, but `extract_and_format()` expected `min_confidence`
+2. `extract_and_format()` returned a string, but CLI expected a dict with `memories` key
+3. `save_proposed_memories()` expected `(proposed, indices, project_root)` but CLI called with `(memories, project_root)`
+
+### Root Cause
+
+The CLI command was written expecting a different API than what the core functions provided. The bug only manifested when using the `.cortex-engine/` installation pattern with `--root` flag.
+
+### Fix
+
+| Component | Change |
+|-----------|--------|
+| `core/extractor.py` | `extract_and_format()` now returns dict, accepts `project_root` param |
+| `core/extractor.py` | `save_proposed_memories()` reordered params, made `indices` optional |
+| `core/extractor.py` | Added `format_proposed_memories()` for string output |
+| `cli/commands/extract.py` | Uses explicit keyword arguments |
+
+### Verification
+
+- [x] `extract` command works from `.cortex-engine/` with `--root ..`
+- [x] `extract` command still works from Cortex repo directly
+- [x] `--auto-save` flag works correctly
+- [x] Both dict and ProposedMemory objects handled in save function
+
+---
+
+*Cortex v2.1.1 - Development completed 2026-02-04*
