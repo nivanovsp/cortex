@@ -28,9 +28,9 @@ cd .cortex-engine && python -m cli init --root ..
 **After (v2.2.0):**
 ```bash
 # Windows:
-python -m venv .cortex-engine\.venv
-.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
-cd .cortex-engine && .venv\Scripts\python -m cli init --root ..
+python -m venv .cortex-engine/.venv
+.cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt
+cd .cortex-engine && .venv/Scripts/python -m cli init --root ..
 
 # Unix:
 python -m venv .cortex-engine/.venv
@@ -65,8 +65,8 @@ New classmethods in `core/config.py`:
 1. Create the isolated venv:
    ```bash
    # Windows:
-   python -m venv .cortex-engine\.venv
-   .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
+   python -m venv .cortex-engine/.venv
+   .cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt
 
    # Unix:
    python -m venv .cortex-engine/.venv
@@ -76,7 +76,7 @@ New classmethods in `core/config.py`:
 2. Update your workflow to use the venv python for CLI commands:
    ```bash
    # Windows:
-   cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+   cd .cortex-engine && .venv/Scripts/python -m cli <command> --root ..
    # Unix:
    cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
    ```

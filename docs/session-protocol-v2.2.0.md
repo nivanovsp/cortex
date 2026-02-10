@@ -21,9 +21,9 @@ cd .cortex-engine && python -m cli retrieve --query "..." --root ..
 
 **After (v2.2.0) — Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli status --json --root ..
-cd .cortex-engine && .venv\Scripts\python -m cli assemble --task "..." --root ..
-cd .cortex-engine && .venv\Scripts\python -m cli retrieve --query "..." --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli status --json --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli assemble --task "..." --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli retrieve --query "..." --root ..
 ```
 
 **After (v2.2.0) — Unix:**
@@ -47,8 +47,8 @@ pip install -r .cortex-engine/requirements.txt
 **After (v2.2.0):**
 ```bash
 # Windows:
-python -m venv .cortex-engine\.venv
-.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
+python -m venv .cortex-engine/.venv
+.cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt
 # Unix:
 python -m venv .cortex-engine/.venv
 .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt

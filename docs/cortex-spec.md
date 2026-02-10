@@ -405,7 +405,7 @@ def chunk_document(doc):
 ```bash
 # Create and activate virtual environment first
 python -m venv .venv
-# Windows: .venv\Scripts\pip install sentence-transformers
+# Windows: .venv/Scripts/pip install sentence-transformers
 # Unix: .venv/bin/pip install sentence-transformers
 # Model downloads automatically on first use
 ```
@@ -710,7 +710,7 @@ All commands run from `.cortex-engine/` using the virtual environment's Python, 
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli <command> --root ..
 ```
 
 **Unix (macOS/Linux):**
@@ -718,7 +718,7 @@ cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
 cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
 ```
 
-When developing inside the Cortex repo itself, the simpler `.venv\Scripts\python -m cli <command>` (Windows) or `.venv/bin/python -m cli <command>` (Unix) works.
+When developing inside the Cortex repo itself, the simpler `.venv/Scripts/python -m cli <command>` (Windows) or `.venv/bin/python -m cli <command>` (Unix) works.
 
 | Command | Purpose |
 |---------|---------|

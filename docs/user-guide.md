@@ -44,7 +44,7 @@ The agent handles everything automatically.
    ```bash
    cd .cortex-engine && python -m venv .venv
    # Windows:
-   .cortex-engine\.venv\Scripts\pip install -r .cortex-engine/requirements.txt
+   .cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt
    # Unix:
    .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt
    ```
@@ -59,9 +59,9 @@ The agent handles everything automatically.
 5. **Initialize and Bootstrap**
    ```bash
    # Windows:
-   cd .cortex-engine && .venv\Scripts\python -m cli init --root ..
-   cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --root ..
-   cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+   cd .cortex-engine && .venv/Scripts/python -m cli init --root ..
+   cd .cortex-engine && .venv/Scripts/python -m cli bootstrap --root ..
+   cd .cortex-engine && .venv/Scripts/python -m cli index --root ..
    # Unix:
    cd .cortex-engine && .venv/bin/python -m cli init --root ..
    cd .cortex-engine && .venv/bin/python -m cli bootstrap --root ..
@@ -71,7 +71,7 @@ The agent handles everything automatically.
 6. **Verify**
    ```bash
    # Windows:
-   cd .cortex-engine && .venv\Scripts\python -m cli status --root ..
+   cd .cortex-engine && .venv/Scripts/python -m cli status --root ..
    # Unix:
    cd .cortex-engine && .venv/bin/python -m cli status --root ..
    ```
@@ -254,10 +254,10 @@ Run before concluding a phase: `/checklists:{name}`
 ### When to Use CLI Directly
 
 Most users won't need to run commands. However, you can use them for (shown with Windows paths; use `.venv/bin/python` on Unix):
-- Initial setup (`cd .cortex-engine && .venv\Scripts\python -m cli init --root ..`)
-- Bulk document chunking (`cd .cortex-engine && .venv\Scripts\python -m cli chunk --path docs/ --root ..`)
-- Refreshing stale chunks (`cd .cortex-engine && .venv\Scripts\python -m cli chunk --path file.md --refresh --root ..`)
-- Debugging (`cd .cortex-engine && .venv\Scripts\python -m cli status --json --root ..`)
+- Initial setup (`cd .cortex-engine && .venv/Scripts/python -m cli init --root ..`)
+- Bulk document chunking (`cd .cortex-engine && .venv/Scripts/python -m cli chunk --path docs/ --root ..`)
+- Refreshing stale chunks (`cd .cortex-engine && .venv/Scripts/python -m cli chunk --path file.md --refresh --root ..`)
+- Debugging (`cd .cortex-engine && .venv/Scripts/python -m cli status --json --root ..`)
 
 ---
 
@@ -268,7 +268,7 @@ All CLI commands run from `.cortex-engine/` using the venv Python, with `--root 
 1. **Chunk your documentation**
    ```bash
    # Windows:
-   cd .cortex-engine && .venv\Scripts\python -m cli chunk --path docs/ --root ..
+   cd .cortex-engine && .venv/Scripts/python -m cli chunk --path docs/ --root ..
    # Unix:
    cd .cortex-engine && .venv/bin/python -m cli chunk --path docs/ --root ..
    ```
@@ -276,7 +276,7 @@ All CLI commands run from `.cortex-engine/` using the venv Python, with `--root 
 2. **Build the search index**
    ```bash
    # Windows:
-   cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+   cd .cortex-engine && .venv/Scripts/python -m cli index --root ..
    # Unix:
    cd .cortex-engine && .venv/bin/python -m cli index --root ..
    ```
@@ -284,7 +284,7 @@ All CLI commands run from `.cortex-engine/` using the venv Python, with `--root 
 3. **Test retrieval**
    ```bash
    # Windows:
-   cd .cortex-engine && .venv\Scripts\python -m cli retrieve --query "authentication" --root ..
+   cd .cortex-engine && .venv/Scripts/python -m cli retrieve --query "authentication" --root ..
    # Unix:
    cd .cortex-engine && .venv/bin/python -m cli retrieve --query "authentication" --root ..
    ```

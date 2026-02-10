@@ -38,8 +38,8 @@ git clone https://github.com/nivanovsp/cortex.git .cortex-engine
 
 # Create isolated venv and install dependencies
 # Windows:
-python -m venv .cortex-engine\.venv
-.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
+python -m venv .cortex-engine/.venv
+.cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt
 # Unix:
 python -m venv .cortex-engine/.venv
 .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt
@@ -50,7 +50,7 @@ cp -r .cortex-engine/.claude ./.claude
 cp .cortex-engine/CLAUDE.md ./CLAUDE.md
 
 # Initialize, bootstrap, and index (use venv python)
-# Windows: replace `python` with `.venv\Scripts\python`
+# Windows: replace `python` with `.venv/Scripts/python`
 # Unix: replace `python` with `.venv/bin/python`
 cd .cortex-engine && .venv/bin/python -m cli init --root ..
 cd .cortex-engine && .venv/bin/python -m cli bootstrap --root ..
@@ -69,7 +69,7 @@ See [INSTALL.md](INSTALL.md) for full details.
 # All CLI commands run from .cortex-engine/ using the venv python
 cd .cortex-engine
 
-# Use the venv python (replace with .venv\Scripts\python on Windows)
+# Use the venv python (replace with .venv/Scripts/python on Windows)
 # Chunk your documents
 .venv/bin/python -m cli chunk --path docs/ --root ..
 
@@ -91,7 +91,7 @@ All commands run from `.cortex-engine/` using the venv python with `--root ..`:
 # Unix:
 cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
 # Windows:
-cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli <command> --root ..
 ```
 
 ### Core Operations

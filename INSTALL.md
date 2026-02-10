@@ -31,7 +31,7 @@ git clone https://github.com/nivanovsp/cortex.git .cortex-engine
 
 **Windows:**
 ```bash
-python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
+python -m venv .cortex-engine/.venv && .cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt
 ```
 
 **Unix:**
@@ -51,7 +51,7 @@ cp .cortex-engine/CLAUDE.md ./CLAUDE.md
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli init --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli init --root ..
 ```
 
 **Unix:**
@@ -65,8 +65,8 @@ This creates `.cortex/` directory and downloads the embedding model (~130MB, fir
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --root ..
-cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli bootstrap --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli index --root ..
 ```
 
 **Unix:**
@@ -101,7 +101,7 @@ cp .cortex-engine/global/CLAUDE.md ~/.claude/CLAUDE.md
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli status --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli status --root ..
 ```
 
 **Unix:**
@@ -129,7 +129,7 @@ All commands run from `.cortex-engine/` with `--root` pointing to the project:
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli <command> --root ..
 ```
 
 **Unix:**
@@ -163,8 +163,8 @@ Then re-copy methodology files (Step 3 above) and re-bootstrap:
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --force --root ..
-cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli bootstrap --force --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli index --root ..
 ```
 
 **Unix:**
@@ -201,7 +201,7 @@ You're running from the wrong directory. Run from `.cortex-engine/`:
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli status --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli status --root ..
 ```
 
 **Unix:**
@@ -216,7 +216,7 @@ Install Python 3.8+ and ensure it's in your PATH.
 
 **Windows:**
 ```bash
-.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
+.cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt
 ```
 
 **Unix:**
@@ -231,7 +231,7 @@ The e5-small-v2 model downloads from HuggingFace. Check your internet connection
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli init --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli init --root ..
 ```
 
 **Unix:**
@@ -243,8 +243,8 @@ cd .cortex-engine && .venv/bin/python -m cli init --root ..
 
 **Windows:**
 ```bash
-cd .cortex-engine && .venv\Scripts\python -m cli chunk --path <file> --refresh --root ..
-cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli chunk --path <file> --refresh --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli index --root ..
 ```
 
 **Unix:**
@@ -284,7 +284,7 @@ If upgrading from v2.0.0:
 ### Migrating from v2.1.x
 
 1. Create the isolated venv:
-   - Windows: `python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - Windows: `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt`
    - Unix: `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 2. All CLI commands now use the venv python instead of bare `python`
 3. Your project's own venv is no longer affected by Cortex dependencies

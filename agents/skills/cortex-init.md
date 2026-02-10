@@ -13,7 +13,7 @@ Initialize Cortex in the current project. This skill runs the full setup sequenc
 ### 0. Create Isolated Environment (when running from `.cortex-engine/`)
 
 If running from an installed project (`.cortex-engine/` pattern), create a venv first:
-- **Windows:** `python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+- **Windows:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt`
 - **Unix:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
 All subsequent CLI commands should use the venv python (`.venv/Scripts/python` on Windows, `.venv/bin/python` on Unix).

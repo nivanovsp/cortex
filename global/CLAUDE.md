@@ -144,7 +144,7 @@ When the user says "initialize cortex", "cortex init", or "set up cortex", run t
    - If `.cortex-engine/` already exists, ask the user whether to re-clone or skip.
 
 2. **Create isolated environment** — Create a venv and install dependencies:
-   - **Windows:** `python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - **Windows:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt`
    - **Unix:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
 3. **Copy methodology** — Copy from `.cortex-engine/` into the project root:
@@ -155,15 +155,15 @@ When the user says "initialize cortex", "cortex init", or "set up cortex", run t
    ```
 
 4. **Initialize Cortex** — Use the venv python to run CLI commands:
-   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli init --root ..`
+   - **Windows:** `cd .cortex-engine && .venv/Scripts/python -m cli init --root ..`
    - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli init --root ..`
 
 5. **Bootstrap methodology** — Using the venv python:
-   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --root ..`
+   - **Windows:** `cd .cortex-engine && .venv/Scripts/python -m cli bootstrap --root ..`
    - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli bootstrap --root ..`
 
 6. **Build indices** — Using the venv python:
-   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli index --root ..`
+   - **Windows:** `cd .cortex-engine && .venv/Scripts/python -m cli index --root ..`
    - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli index --root ..`
 
 7. **Update .gitignore** — Add `.cortex-engine/` and `.cortex/` to `.gitignore` (create it if needed).
@@ -191,17 +191,17 @@ When the user says "cortex update", "update cortex", or "refresh cortex", run th
 1. **Pull latest** — `cd .cortex-engine && git pull`
 
 2. **Update venv dependencies** — Install any new or updated dependencies into the existing venv:
-   - **Windows:** `.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - **Windows:** `.cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt`
    - **Unix:** `.cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
 3. **Re-copy methodology** — Copy updated files from `.cortex-engine/` into the project root (same copy commands as initialization step 3).
 
 4. **Re-bootstrap** — Using the venv python:
-   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --force --root ..`
+   - **Windows:** `cd .cortex-engine && .venv/Scripts/python -m cli bootstrap --force --root ..`
    - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli bootstrap --force --root ..`
 
 5. **Rebuild indices** — Using the venv python:
-   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli index --root ..`
+   - **Windows:** `cd .cortex-engine && .venv/Scripts/python -m cli index --root ..`
    - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli index --root ..`
 
 6. **Verify** — Using the venv python, run `status --root ..`.

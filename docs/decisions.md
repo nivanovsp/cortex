@@ -860,7 +860,7 @@ cd .cortex-engine && python -m cli <command> --root ..
 To:
 ```
 # Windows:
-cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli <command> --root ..
 # Unix:
 cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
 ```

@@ -381,7 +381,7 @@ cli/
 
 Windows:
 ```powershell
-cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli <command> --root ..
 ```
 
 Unix (macOS / Linux):
@@ -675,8 +675,8 @@ Windows:
 ```
 cd .cortex-engine && git pull
 → Re-copy agents/, .claude/, CLAUDE.md to project root
-→ cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --force --root ..
-→ cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+→ cd .cortex-engine && .venv/Scripts/python -m cli bootstrap --force --root ..
+→ cd .cortex-engine && .venv/Scripts/python -m cli index --root ..
 ```
 
 Unix (macOS / Linux):

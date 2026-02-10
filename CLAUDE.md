@@ -24,7 +24,7 @@ All CLI commands run from the `.cortex-engine/` directory using the isolated ven
 
 **Windows:**
 ```
-cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+cd .cortex-engine && .venv/Scripts/python -m cli <command> --root ..
 ```
 
 **Unix (Mac/Linux):**
@@ -46,7 +46,7 @@ When working inside the Cortex repo itself (development), the simpler `python -m
 **Any agent can be the entry point.** There is no required starting agent. Every agent follows the same activation flow:
 
 1. Load mode spec (~2KB — persona, rules, skills list)
-2. Run `cd .cortex-engine && .venv\Scripts\python -m cli status --json --root ..` (Windows) or `cd .cortex-engine && .venv/bin/python -m cli status --json --root ..` (Unix) silently — note metadata
+2. Run `cd .cortex-engine && .venv/Scripts/python -m cli status --json --root ..` (Windows) or `cd .cortex-engine && .venv/bin/python -m cli status --json --root ..` (Unix) silently — note metadata
 3. Greet the user as your persona — state what you can do
 4. **Wait for the user to select a topic/task**
 5. THEN retrieve handoffs, artifacts, and learnings for that topic
@@ -227,7 +227,7 @@ These commands are called automatically by the session protocol. Users should no
 ### From installed projects (engine in `.cortex-engine/`)
 
 All commands run from `.cortex-engine/` using the isolated venv. Replace `{python}` with the platform-appropriate venv Python path:
-- **Windows:** `.venv\Scripts\python`
+- **Windows:** `.venv/Scripts/python`
 - **Unix:** `.venv/bin/python`
 
 ```
@@ -351,7 +351,7 @@ When the user says "initialize cortex", "cortex init", or "set up cortex", run t
    - If `.cortex-engine/` already exists, ask the user whether to re-clone or skip.
 
 2. **Create isolated environment** — Create a venv and install dependencies:
-   - **Windows:** `python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - **Windows:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt`
    - **Unix:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
 3. **Copy methodology** — Copy from `.cortex-engine/` into the project root:
@@ -392,7 +392,7 @@ When the user says "cortex update", "update cortex", or "refresh cortex", run th
 1. **Pull latest** — `cd .cortex-engine && git pull`
 
 2. **Update venv dependencies** — Install any new or updated dependencies into the existing venv:
-   - **Windows:** `.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - **Windows:** `.cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements.txt`
    - **Unix:** `.cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
 3. **Re-copy methodology** — Copy updated files from `.cortex-engine/` into the project root (same copy commands as initialization step 3).
