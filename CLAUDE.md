@@ -10,30 +10,43 @@
 
 **Cortex** is a complete, self-contained software development methodology with LLM-native context management. It provides expert agents, structured skills, templates, and semantic retrieval — everything needed to go from requirements to delivered software.
 
-**Version:** 2.1.0
+**Version:** 2.2.0
 
 ---
 
-## Session Protocol (v2.1.0)
+## Session Protocol (v2.2.0)
 
 This protocol defines how you (the agent) interact with Cortex throughout a session. Follow these instructions automatically — users should not need to know about commands.
 
 ### CLI Invocation
 
-All CLI commands run from the `.cortex-engine/` directory with `--root` pointing to the project:
+All CLI commands run from the `.cortex-engine/` directory using the isolated venv:
 
+**Windows:**
+```
+cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+```
+
+**Unix (Mac/Linux):**
+```
+cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
+```
+
+**Fallback (pre-v2.2.0 installations without venv):**
 ```
 cd .cortex-engine && python -m cli <command> --root ..
 ```
 
 When working inside the Cortex repo itself (development), the simpler `python -m cli <command>` works directly.
 
+**Platform detection:** Check the platform and use the appropriate venv path. If `.cortex-engine/.venv/` does not exist, fall back to bare `python`.
+
 ### Agent Activation (Decentralized)
 
 **Any agent can be the entry point.** There is no required starting agent. Every agent follows the same activation flow:
 
 1. Load mode spec (~2KB — persona, rules, skills list)
-2. Run `cd .cortex-engine && python -m cli status --json --root ..` silently — note metadata
+2. Run `cd .cortex-engine && .venv\Scripts\python -m cli status --json --root ..` (Windows) or `cd .cortex-engine && .venv/bin/python -m cli status --json --root ..` (Unix) silently — note metadata
 3. Greet the user as your persona — state what you can do
 4. **Wait for the user to select a topic/task**
 5. THEN retrieve handoffs, artifacts, and learnings for that topic
@@ -45,7 +58,7 @@ When working inside the Cortex repo itself (development), the simpler `python -m
 
 When the conversation begins without a mode activation:
 
-1. Run `cd .cortex-engine && python -m cli status --json --root ..` silently
+1. Run the status command using the venv python (see CLI Invocation above) silently
 2. Note the result internally (chunk count, memory count, domains, stale chunks)
 3. **DO NOT** load any content files — wait for task identification
 4. Greet the user and mention Cortex is available if relevant
@@ -66,7 +79,7 @@ When the user specifies what to work on, detect phrases like:
 
 **Action:**
 1. Extract the task from their statement
-2. Run `cd .cortex-engine && python -m cli assemble --task "{extracted task}" --root ..`
+2. Run the `assemble --task "{extracted task}"` command using the venv python (see CLI Invocation above)
 3. Use the returned context frame to inform your work
 4. **DO NOT** mention the command to the user — just have the context
 
@@ -86,7 +99,7 @@ When the user asks for more information, detect phrases like:
 
 **Action:**
 1. Extract the topic from their question
-2. Run `cd .cortex-engine && python -m cli retrieve --query "{topic}" --root ..`
+2. Run the `retrieve --query "{topic}"` command using the venv python (see CLI Invocation above)
 3. Present the information naturally
 4. **DO NOT** mention the command — just answer their question
 
@@ -103,11 +116,11 @@ When the user explicitly requests learning extraction, detect phrases like:
 
 **Action:**
 1. Identify key learnings from the session (fixes, discoveries, procedures)
-2. Run `cd .cortex-engine && python -m cli extract --text "{learnings summary}" --root ..`
+2. Run the `extract --text "{learnings summary}"` command using the venv python (see CLI Invocation above)
 3. Present proposed memories to the user with confidence levels
 4. Ask which memories to save
 5. Save approved memories
-6. Run `cd .cortex-engine && python -m cli index --root ..` to rebuild the index
+6. Run the `index` command using the venv python to rebuild the index
 
 ### Context Budget
 
@@ -213,24 +226,26 @@ These commands are called automatically by the session protocol. Users should no
 
 ### From installed projects (engine in `.cortex-engine/`)
 
-All commands run from `.cortex-engine/` with `--root` pointing to the project:
+All commands run from `.cortex-engine/` using the isolated venv. Replace `{python}` with the platform-appropriate venv Python path:
+- **Windows:** `.venv\Scripts\python`
+- **Unix:** `.venv/bin/python`
 
 ```
-cd .cortex-engine && python -m cli <command> --root ..
+cd .cortex-engine && {python} -m cli <command> --root ..
 ```
 
 | Command | Purpose | When Called |
 |---------|---------|-------------|
-| `cd .cortex-engine && python -m cli status --root ..` | Get system metadata | Session start |
-| `cd .cortex-engine && python -m cli assemble --task "..." --root ..` | Build context frame | Task identified |
-| `cd .cortex-engine && python -m cli retrieve --query "..." --root ..` | Search for context | User asks for info |
-| `cd .cortex-engine && python -m cli extract --text "..." --root ..` | Extract learnings | User ends session |
-| `cd .cortex-engine && python -m cli index --root ..` | Rebuild indices | After saving memories |
-| `cd .cortex-engine && python -m cli memory add --learning "..." --root ..` | Add memory manually | Explicit request |
-| `cd .cortex-engine && python -m cli init --root ..` | Initialize Cortex | Project setup |
-| `cd .cortex-engine && python -m cli bootstrap --root ..` | Chunk methodology | After init |
-| `cd .cortex-engine && python -m cli chunk --path "..." --root ..` | Chunk documents | Adding new docs |
-| `cd .cortex-engine && python -m cli chunk --path "..." --refresh --root ..` | Re-chunk modified files | Stale chunks |
+| `cd .cortex-engine && {python} -m cli status --root ..` | Get system metadata | Session start |
+| `cd .cortex-engine && {python} -m cli assemble --task "..." --root ..` | Build context frame | Task identified |
+| `cd .cortex-engine && {python} -m cli retrieve --query "..." --root ..` | Search for context | User asks for info |
+| `cd .cortex-engine && {python} -m cli extract --text "..." --root ..` | Extract learnings | User ends session |
+| `cd .cortex-engine && {python} -m cli index --root ..` | Rebuild indices | After saving memories |
+| `cd .cortex-engine && {python} -m cli memory add --learning "..." --root ..` | Add memory manually | Explicit request |
+| `cd .cortex-engine && {python} -m cli init --root ..` | Initialize Cortex | Project setup |
+| `cd .cortex-engine && {python} -m cli bootstrap --root ..` | Chunk methodology | After init |
+| `cd .cortex-engine && {python} -m cli chunk --path "..." --root ..` | Chunk documents | Adding new docs |
+| `cd .cortex-engine && {python} -m cli chunk --path "..." --refresh --root ..` | Re-chunk modified files | Stale chunks |
 
 ### From Cortex repo (development)
 
@@ -242,7 +257,7 @@ python -m cli <command>
 
 ---
 
-## Agent System (v2.1.0)
+## Agent System (v2.2.0)
 
 Cortex ships with a complete agent system — expert personas with dedicated skills, templates, and quality checklists. See `agents/README.md` for full details.
 
@@ -335,7 +350,9 @@ When the user says "initialize cortex", "cortex init", or "set up cortex", run t
 1. **Clone engine** — `git clone https://github.com/nivanovsp/cortex.git .cortex-engine`
    - If `.cortex-engine/` already exists, ask the user whether to re-clone or skip.
 
-2. **Install dependencies** — `pip install -r .cortex-engine/requirements.txt`
+2. **Create isolated environment** — Create a venv and install dependencies:
+   - **Windows:** `python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - **Unix:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
 3. **Copy methodology** — Copy from `.cortex-engine/` into the project root:
    ```bash
@@ -344,15 +361,15 @@ When the user says "initialize cortex", "cortex init", or "set up cortex", run t
    cp .cortex-engine/CLAUDE.md ./CLAUDE.md
    ```
 
-4. **Initialize Cortex** — `cd .cortex-engine && python -m cli init --root ..`
+4. **Initialize Cortex** — Run the `init --root ..` command using the venv python (see CLI Invocation).
 
-5. **Bootstrap methodology** — `cd .cortex-engine && python -m cli bootstrap --root ..`
+5. **Bootstrap methodology** — Run the `bootstrap --root ..` command using the venv python.
 
-6. **Build indices** — `cd .cortex-engine && python -m cli index --root ..`
+6. **Build indices** — Run the `index --root ..` command using the venv python.
 
 7. **Update .gitignore** — Add `.cortex-engine/` and `.cortex/` to `.gitignore` (create it if needed).
 
-8. **Verify** — `cd .cortex-engine && python -m cli status --root ..` — confirm chunks exist and METHODOLOGY domain is present.
+8. **Verify** — Run the `status --root ..` command using the venv python — confirm chunks exist, METHODOLOGY domain is present, and environment shows "Isolated (.venv)".
 
 ### Report
 
@@ -374,13 +391,17 @@ When the user says "cortex update", "update cortex", or "refresh cortex", run th
 
 1. **Pull latest** — `cd .cortex-engine && git pull`
 
-2. **Re-copy methodology** — Copy updated files from `.cortex-engine/` into the project root (same copy commands as initialization step 3).
+2. **Update venv dependencies** — Install any new or updated dependencies into the existing venv:
+   - **Windows:** `.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - **Unix:** `.cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
-3. **Re-bootstrap** — `cd .cortex-engine && python -m cli bootstrap --force --root ..`
+3. **Re-copy methodology** — Copy updated files from `.cortex-engine/` into the project root (same copy commands as initialization step 3).
 
-4. **Rebuild indices** — `cd .cortex-engine && python -m cli index --root ..`
+4. **Re-bootstrap** — Run the `bootstrap --force --root ..` command using the venv python.
 
-5. **Verify** — `cd .cortex-engine && python -m cli status --root ..`
+5. **Rebuild indices** — Run the `index --root ..` command using the venv python.
+
+6. **Verify** — Run the `status --root ..` command using the venv python.
 
 ### Report
 

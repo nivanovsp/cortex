@@ -10,6 +10,16 @@ Initialize Cortex in the current project. This skill runs the full setup sequenc
 
 ## Procedure
 
+### 0. Create Isolated Environment (when running from `.cortex-engine/`)
+
+If running from an installed project (`.cortex-engine/` pattern), create a venv first:
+- **Windows:** `python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+- **Unix:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
+
+All subsequent CLI commands should use the venv python (`.venv/Scripts/python` on Windows, `.venv/bin/python` on Unix).
+
+When running from within the Cortex repo (development), use `python -m cli` directly.
+
 ### 1. Initialize
 
 Run `python -m cli init` to create the `.cortex/` runtime directory (chunks, memories, indices).
@@ -31,6 +41,7 @@ Run `python -m cli index` to build the vector indices from all chunks and memori
 Run `python -m cli status` and confirm:
 - Chunk count is greater than zero
 - METHODOLOGY domain is present
+- Environment shows "Isolated (.venv)" (when using venv)
 - No errors reported
 
 ## Output

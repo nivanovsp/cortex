@@ -817,3 +817,65 @@ The global `~/.claude/CLAUDE.md` had grown to ~450 lines and contained significa
 Initial implementation moved init/update procedures entirely to project CLAUDE.md. Testing in a new empty folder revealed the chicken-and-egg problem: "cortex init" requires these instructions, but the project CLAUDE.md doesn't exist until after initialization completes (step 3 copies it from the engine).
 
 **Fix:** Restored init/update procedures to the global CLAUDE.md. This duplication is intentional and necessary — the global file bootstraps the project file. Final global file size: ~230 lines (still down from ~450).
+
+---
+
+## ADR-021: Virtual Environment Isolation
+
+**Date:** 2026-02-10
+**Status:** Accepted
+**Version:** 2.2.0
+
+### Context
+
+When Cortex is installed into a project via `.cortex-engine/`, the initialization runs `pip install -r .cortex-engine/requirements.txt` into whatever Python environment is active. This causes three problems:
+
+1. **Wrong environment** — If the project has its own venv (e.g., Django, Flask), Cortex dependencies (`typer`, `sentence-transformers`, `numpy`) may not get installed there because the system Python was used instead.
+2. **Pollution** — If the project's venv IS active, Cortex dependencies pollute it with packages unrelated to the project.
+3. **Version conflicts** — Cortex's dependency versions may conflict with the project's own requirements.
+
+When the CLI fails due to missing modules (e.g., `ModuleNotFoundError: No module named 'typer'`), the agent improvises shell commands for status. On Windows, commands like `dir | find /c /v ""` produce hundreds of thousands of lines of garbage output because Windows `find.exe` is completely different from Unix `find`.
+
+### Decision
+
+Create and manage a Cortex-owned virtual environment at `.cortex-engine/.venv/`. All CLI invocations use this venv's Python interpreter directly, without requiring activation.
+
+### Alternatives Considered
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| System pip install | Simple, one command | Wrong env, conflicts, pollution |
+| pipx | Proper isolation | Extra dependency, not self-contained |
+| Docker | Full isolation | Heavy, requires Docker installed |
+| **Dedicated venv** | Self-contained, no conflicts, stdlib | Platform-specific interpreter paths |
+
+### Rationale
+
+`python -m venv` is part of the Python standard library and works on all platforms. The venv lives inside `.cortex-engine/`, maintaining the self-contained design established in ADR-019. Platform-specific paths (`.venv/Scripts/python` on Windows, `.venv/bin/python` on Unix) are manageable through documentation showing both patterns.
+
+The CLI invocation changes from:
+```
+cd .cortex-engine && python -m cli <command> --root ..
+```
+To:
+```
+# Windows:
+cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+# Unix:
+cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
+```
+
+### Consequences
+
+**Positive:**
+- Cortex dependencies never conflict with project dependencies
+- Works regardless of which venv is active in the shell
+- Self-contained inside `.cortex-engine/` (consistent with ADR-019)
+- No additional tools required (`venv` is in stdlib)
+- Status command reports isolation state
+
+**Negative:**
+- CLI invocation path is longer (includes `.venv/Scripts/` or `.venv/bin/`)
+- Platform-specific paths require documenting both Windows and Unix variants
+- Additional disk space for the venv (~50MB minimum, more with PyTorch for sentence-transformers)
+- Pre-v2.2.0 installations need migration (create the venv manually)

@@ -1,6 +1,6 @@
 # Cortex Installation Guide
 
-**Version:** 2.1.0
+**Version:** 2.2.0
 
 ## Prerequisites
 
@@ -29,8 +29,14 @@ git clone https://github.com/nivanovsp/cortex.git .cortex-engine
 
 #### Step 2: Install Dependencies
 
+**Windows:**
 ```bash
-pip install -r .cortex-engine/requirements.txt
+python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
+```
+
+**Unix:**
+```bash
+python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt
 ```
 
 #### Step 3: Copy Methodology Files
@@ -43,17 +49,30 @@ cp .cortex-engine/CLAUDE.md ./CLAUDE.md
 
 #### Step 4: Initialize Cortex
 
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli init --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli init --root ..
+```
+
+**Unix:**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli init --root ..
 ```
 
 This creates `.cortex/` directory and downloads the embedding model (~130MB, first run only).
 
 #### Step 5: Bootstrap Methodology
 
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli bootstrap --root ..
-cd .cortex-engine && python -m cli index --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+```
+
+**Unix:**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli bootstrap --root ..
+cd .cortex-engine && .venv/bin/python -m cli index --root ..
 ```
 
 #### Step 6: Update .gitignore
@@ -80,8 +99,14 @@ cp .cortex-engine/global/CLAUDE.md ~/.claude/CLAUDE.md
 
 #### Step 8: Verify
 
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli status --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli status --root ..
+```
+
+**Unix:**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli status --root ..
 ```
 
 You should see chunks in the METHODOLOGY domain.
@@ -102,8 +127,14 @@ your-project/
 
 All commands run from `.cortex-engine/` with `--root` pointing to the project:
 
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli <command> --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
+```
+
+**Unix:**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
 ```
 
 | Command | Purpose |
@@ -130,9 +161,16 @@ cd .cortex-engine && git pull
 
 Then re-copy methodology files (Step 3 above) and re-bootstrap:
 
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli bootstrap --force --root ..
-cd .cortex-engine && python -m cli index --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --force --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+```
+
+**Unix:**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli bootstrap --force --root ..
+cd .cortex-engine && .venv/bin/python -m cli index --root ..
 ```
 
 ## Agent System
@@ -160,31 +198,64 @@ See `agents/README.md` for full documentation.
 
 ### "No module named cli"
 You're running from the wrong directory. Run from `.cortex-engine/`:
+
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli status --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli status --root ..
+```
+
+**Unix:**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli status --root ..
 ```
 
 ### "Python not found"
 Install Python 3.8+ and ensure it's in your PATH.
 
 ### "No module named 'typer'"
+
+**Windows:**
 ```bash
-pip install -r .cortex-engine/requirements.txt
+.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
+```
+
+**Unix:**
+```bash
+.cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt
 ```
 
 ### "Model download fails"
 The e5-small-v2 model downloads from HuggingFace. Check your internet connection. The model caches at `~/.cache/huggingface/`.
 
 ### "Cortex not initialized"
+
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli init --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli init --root ..
+```
+
+**Unix:**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli init --root ..
 ```
 
 ### "Stale chunks detected"
+
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli chunk --path <file> --refresh --root ..
-cd .cortex-engine && python -m cli index --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli chunk --path <file> --refresh --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
 ```
+
+**Unix:**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli chunk --path <file> --refresh --root ..
+cd .cortex-engine && .venv/bin/python -m cli index --root ..
+```
+
+### ModuleNotFoundError when project venv is active
+
+Cortex uses its own isolated venv at `.cortex-engine/.venv/`. If you see import errors, ensure you're using the venv python path, not your project's python.
 
 ## Uninstalling
 
@@ -209,3 +280,11 @@ If upgrading from v2.0.0:
 5. Rebuild index: `cd .cortex-engine && python -m cli index --root ..`
 6. Update `~/.claude/CLAUDE.md` from `global/CLAUDE.md`
 7. Add `.cortex-engine/` to `.gitignore`
+
+### Migrating from v2.1.x
+
+1. Create the isolated venv:
+   - Windows: `python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - Unix: `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
+2. All CLI commands now use the venv python instead of bare `python`
+3. Your project's own venv is no longer affected by Cortex dependencies

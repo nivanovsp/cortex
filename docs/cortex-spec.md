@@ -1,7 +1,7 @@
 # Cortex: LLM-Native Context Management
 
 **Status**: Specification
-**Version**: 2.1.0
+**Version**: 2.2.0
 **Date**: 2026-02-01
 **Author**: Claude (Architect Mode)
 
@@ -402,8 +402,11 @@ def chunk_document(doc):
 - Runs locally - no API costs, no internet required
 
 **Setup:**
-```powershell
-pip install sentence-transformers
+```bash
+# Create and activate virtual environment first
+python -m venv .venv
+# Windows: .venv\Scripts\pip install sentence-transformers
+# Unix: .venv/bin/pip install sentence-transformers
 # Model downloads automatically on first use
 ```
 
@@ -701,15 +704,21 @@ retrieval_count: 0
 
 ---
 
-## Appendix B: CLI Commands (v2.1.0)
+## Appendix B: CLI Commands (v2.2.0)
 
-All commands run from `.cortex-engine/` with `--root` pointing to the project:
+All commands run from `.cortex-engine/` using the virtual environment's Python, with `--root` pointing to the project:
 
+**Windows:**
 ```bash
-cd .cortex-engine && python -m cli <command> --root ..
+cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
 ```
 
-When developing inside the Cortex repo itself, the simpler `python -m cli <command>` works.
+**Unix (macOS/Linux):**
+```bash
+cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
+```
+
+When developing inside the Cortex repo itself, the simpler `.venv\Scripts\python -m cli <command>` (Windows) or `.venv/bin/python -m cli <command>` (Unix) works.
 
 | Command | Purpose |
 |---------|---------|
@@ -895,4 +904,4 @@ All agents support:
 
 ---
 
-*Cortex v2.1.0 - Complete Software Development Methodology*
+*Cortex v2.2.0 - Complete Software Development Methodology*

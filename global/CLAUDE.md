@@ -1,6 +1,6 @@
 # Cortex Global Rules
 
-**Cortex Methodology v2.1.0: Rules Layer**
+**Cortex Methodology v2.2.0: Rules Layer**
 
 > **Installation:** Copy this file to `~/.claude/CLAUDE.md` (or merge into your existing one).
 >
@@ -143,7 +143,9 @@ When the user says "initialize cortex", "cortex init", or "set up cortex", run t
 1. **Clone engine** — `git clone https://github.com/nivanovsp/cortex.git .cortex-engine`
    - If `.cortex-engine/` already exists, ask the user whether to re-clone or skip.
 
-2. **Install dependencies** — `pip install -r .cortex-engine/requirements.txt`
+2. **Create isolated environment** — Create a venv and install dependencies:
+   - **Windows:** `python -m venv .cortex-engine\.venv && .cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - **Unix:** `python -m venv .cortex-engine/.venv && .cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
 3. **Copy methodology** — Copy from `.cortex-engine/` into the project root:
    ```bash
@@ -152,15 +154,21 @@ When the user says "initialize cortex", "cortex init", or "set up cortex", run t
    cp .cortex-engine/CLAUDE.md ./CLAUDE.md
    ```
 
-4. **Initialize Cortex** — `cd .cortex-engine && python -m cli init --root ..`
+4. **Initialize Cortex** — Use the venv python to run CLI commands:
+   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli init --root ..`
+   - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli init --root ..`
 
-5. **Bootstrap methodology** — `cd .cortex-engine && python -m cli bootstrap --root ..`
+5. **Bootstrap methodology** — Using the venv python:
+   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --root ..`
+   - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli bootstrap --root ..`
 
-6. **Build indices** — `cd .cortex-engine && python -m cli index --root ..`
+6. **Build indices** — Using the venv python:
+   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli index --root ..`
+   - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli index --root ..`
 
 7. **Update .gitignore** — Add `.cortex-engine/` and `.cortex/` to `.gitignore` (create it if needed).
 
-8. **Verify** — `cd .cortex-engine && python -m cli status --root ..` — confirm chunks exist and METHODOLOGY domain is present.
+8. **Verify** — Using the venv python, run `status --root ..` — confirm chunks exist, METHODOLOGY domain is present, and environment shows "Isolated (.venv)".
 
 ### Report
 
@@ -182,13 +190,21 @@ When the user says "cortex update", "update cortex", or "refresh cortex", run th
 
 1. **Pull latest** — `cd .cortex-engine && git pull`
 
-2. **Re-copy methodology** — Copy updated files from `.cortex-engine/` into the project root (same copy commands as initialization step 3).
+2. **Update venv dependencies** — Install any new or updated dependencies into the existing venv:
+   - **Windows:** `.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt`
+   - **Unix:** `.cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt`
 
-3. **Re-bootstrap** — `cd .cortex-engine && python -m cli bootstrap --force --root ..`
+3. **Re-copy methodology** — Copy updated files from `.cortex-engine/` into the project root (same copy commands as initialization step 3).
 
-4. **Rebuild indices** — `cd .cortex-engine && python -m cli index --root ..`
+4. **Re-bootstrap** — Using the venv python:
+   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --force --root ..`
+   - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli bootstrap --force --root ..`
 
-5. **Verify** — `cd .cortex-engine && python -m cli status --root ..`
+5. **Rebuild indices** — Using the venv python:
+   - **Windows:** `cd .cortex-engine && .venv\Scripts\python -m cli index --root ..`
+   - **Unix:** `cd .cortex-engine && .venv/bin/python -m cli index --root ..`
+
+6. **Verify** — Using the venv python, run `status --root ..`.
 
 ### Report
 
@@ -231,4 +247,4 @@ All modes support these commands:
 
 ---
 
-*Cortex Methodology v2.1.0 | Rules Layer*
+*Cortex Methodology v2.2.0 | Rules Layer*

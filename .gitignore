@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 .env
 
 # Cortex runtime data (project-specific, not part of distribution)

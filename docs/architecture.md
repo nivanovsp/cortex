@@ -1,6 +1,6 @@
 # Cortex Architecture
 
-**Version:** 2.1.0
+**Version:** 2.2.0
 
 ## Overview
 
@@ -12,6 +12,7 @@ Cortex is an LLM-native context management system built on the principle that LL
 - **Content freshness** - Track source changes and detect stale chunks (v1.2.0)
 - **Complete methodology** - 6 agents, 29 skills, 14 templates, 6 checklists with decentralized orchestration (v2.0.0)
 - **Standalone installation** - Clone-and-run setup via `cortex init` with engine in `.cortex-engine/` (v2.1.0)
+- **Environment isolation** - Dedicated venv inside `.cortex-engine/` prevents dependency conflicts (v2.2.0)
 
 ## System Architecture
 
@@ -342,7 +343,7 @@ retrieval_count: 0
 | Retrieve top-k | O(n) | <1ms for 500 vectors |
 | Assemble context | O(k) | ~100ms |
 
-## CLI Layer (v2.1.0)
+## CLI Layer (v2.2.0)
 
 The CLI layer (`cli/`) provides a cross-platform interface using Python and Typer.
 
@@ -372,13 +373,23 @@ cli/
 - **Lazy imports**: Core modules loaded only when needed
 - **Natural defaults**: Sensible defaults, minimal required args
 - **Engine-relative imports**: `core/` resolved via `Path(__file__)`, not project root (v2.1.0)
+- **Isolated environment**: Dedicated `.venv/` inside `.cortex-engine/` avoids polluting the host project (v2.2.0)
 
-### Invocation Patterns (v2.1.0)
+### Invocation Patterns (v2.2.0)
 
 **Installed projects** (engine in `.cortex-engine/`):
-```bash
-cd .cortex-engine && python -m cli <command> --root ..
+
+Windows:
+```powershell
+cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
 ```
+
+Unix (macOS / Linux):
+```bash
+cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
+```
+
+> **Fallback:** For pre-v2.2.0 installations that lack a `.venv/` directory, the bare `python -m cli` invocation still works provided the required dependencies are available on the system Python.
 
 **Development** (inside Cortex repo):
 ```bash
@@ -617,15 +628,16 @@ python -m cli index              # Rebuild indices
 - **No Secrets**: Never chunk files containing API keys or credentials
 - **File Permissions**: `.cortex/` inherits project permissions
 
-## Standalone Installation Architecture (v2.1.0)
+## Standalone Installation Architecture (v2.2.0)
 
-Cortex v2.1.0 enables standalone installation in any project via "cortex init".
+Cortex v2.2.0 enables standalone installation in any project via "cortex init".
 
 ### Installation Layout
 
 ```
 your-project/
 ├── .cortex-engine/          # Cloned Cortex repo
+│   ├── .venv/               # Isolated Python virtual environment (v2.2.0)
 │   ├── cli/                 # CLI entry point
 │   ├── core/                # Python core modules
 │   ├── agents/              # Source of truth for methodology
@@ -641,6 +653,10 @@ your-project/
 └── .gitignore               # Includes .cortex-engine/ and .cortex/
 ```
 
+### Environment Isolation
+
+Cortex creates a dedicated virtual environment (`.venv/`) inside `.cortex-engine/` during initialization. This ensures that Cortex's Python dependencies -- such as the sentence-transformers library, NumPy, and Typer -- are installed in isolation and never conflict with the host project's own packages or virtual environment. The `.venv/` is self-contained; removing `.cortex-engine/` cleanly removes all of Cortex's dependencies along with it.
+
 ### Path Resolution
 
 All CLI commands resolve `core/` relative to the engine's own location:
@@ -655,13 +671,22 @@ This allows the engine to live in `.cortex-engine/` while data (`.cortex/`) and 
 
 ### Update Flow
 
+Windows:
 ```
 cd .cortex-engine && git pull
 → Re-copy agents/, .claude/, CLAUDE.md to project root
-→ cd .cortex-engine && python -m cli bootstrap --force --root ..
-→ cd .cortex-engine && python -m cli index --root ..
+→ cd .cortex-engine && .venv\Scripts\python -m cli bootstrap --force --root ..
+→ cd .cortex-engine && .venv\Scripts\python -m cli index --root ..
+```
+
+Unix (macOS / Linux):
+```
+cd .cortex-engine && git pull
+→ Re-copy agents/, .claude/, CLAUDE.md to project root
+→ cd .cortex-engine && .venv/bin/python -m cli bootstrap --force --root ..
+→ cd .cortex-engine && .venv/bin/python -m cli index --root ..
 ```
 
 ---
 
-*Cortex v2.1.0 - Complete Software Development Methodology*
+*Cortex v2.2.0 - Complete Software Development Methodology*

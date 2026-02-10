@@ -29,8 +29,17 @@ def run(
 
     cortex_path = Config.get_cortex_path(str(root))
 
+    # Check venv status
+    venv_exists = Config.has_venv(engine_root)
+    venv_python = Config.get_venv_python(engine_root) if venv_exists else None
+
     status = {
         'initialized': os.path.exists(cortex_path),
+        'venv': {
+            'exists': venv_exists,
+            'python': venv_python,
+            'isolated': venv_exists
+        },
         'chunks': {'count': 0, 'domains': []},
         'memories': {'count': 0, 'by_type': {}, 'by_domain': {}},
         'indices': {},
@@ -104,6 +113,10 @@ def run(
             return
 
         typer.secho("Status: INITIALIZED", fg=typer.colors.GREEN)
+        if venv_exists:
+            typer.secho("Environment: Isolated (.venv)", fg=typer.colors.GREEN)
+        else:
+            typer.secho("Environment: System Python (not isolated)", fg=typer.colors.YELLOW)
         typer.echo()
 
         # Chunks

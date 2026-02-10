@@ -5,6 +5,37 @@ All notable changes to Cortex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-02-10
+
+### Added
+
+- **Virtual Environment Isolation** — Cortex creates and manages its own venv at `.cortex-engine/.venv/`
+  - All CLI commands use the venv's Python interpreter instead of system Python
+  - Prevents dependency conflicts with host project's own virtualenv
+  - Works regardless of which venv is active in the shell
+  - No additional tools required (`python -m venv` is in the standard library)
+
+- **Venv helpers in Config** — `get_venv_python()` and `has_venv()` classmethods for platform-aware venv detection
+
+- **Venv status in CLI** — `status` command reports environment isolation state (Isolated vs System Python)
+
+- **ADR-021** — Virtual Environment Isolation decision record
+
+### Changed
+
+- **Initialization procedure** — Step 2 creates a dedicated venv before installing dependencies
+- **CLI invocation pattern** — Uses `.venv/Scripts/python` (Windows) or `.venv/bin/python` (Unix) instead of bare `python`
+- **Session protocol** — All CLI references updated for venv-aware invocation (v2.2.0)
+- **Update procedure** — Includes dependency update step for the venv
+
+### Fixed
+
+- Cortex dependencies no longer pollute host project's virtualenv
+- `ModuleNotFoundError` when project venv is active but Cortex deps not installed
+- Agent fallback to broken shell commands on Windows when CLI unavailable
+
+---
+
 ## [2.1.1] - 2026-02-04
 
 ### Fixed

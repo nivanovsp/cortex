@@ -575,3 +575,63 @@ The CLI command was written expecting a different API than what the core functio
 ---
 
 *Cortex v2.1.1 - Development completed 2026-02-04*
+
+---
+
+## v2.2.0 - Virtual Environment Isolation
+
+**Date:** 2026-02-10
+**Objective:** Prevent dependency conflicts between Cortex and host project environments
+
+### Background
+
+When Cortex was installed into a project that has its own virtual environment (e.g., Django, Flask, FastAPI), the initialization step `pip install -r .cortex-engine/requirements.txt` either:
+1. Installed into the system Python (not the project's venv)
+2. Polluted the project's venv with Cortex-specific dependencies
+3. Conflicted with the project's own dependency versions
+
+When Cortex's `typer` dependency wasn't available in the active environment, the CLI failed with `ModuleNotFoundError`, causing the agent to improvise shell commands. On Windows, these improvised commands (e.g., `dir | find /c /v ""`) produced 800K+ lines of garbage output because Windows `find.exe` behaves completely differently from Unix `find`.
+
+### Design Decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Venv location | `.cortex-engine/.venv/` | Self-contained inside engine dir (ADR-019) |
+| Creation method | `python -m venv` | Standard library, no extra tools needed |
+| CLI invocation | Direct interpreter path | No activation needed, works in any shell context |
+| Backward compat | Fall back to bare `python` | Pre-v2.2.0 installs continue working |
+| No new CLI command | Venv created before CLI | Chicken-and-egg: typer not available until venv is set up |
+
+### Deliverables
+
+| File | Change |
+|------|--------|
+| `core/__init__.py` | Version bump to 2.2.0 |
+| `core/config.py` | Added `VENV_DIR`, `get_venv_python()`, `has_venv()` |
+| `cli/commands/status.py` | Reports venv isolation status |
+| `.gitignore` | Added `.venv/` |
+| `CLAUDE.md` | Session protocol v2.2.0, venv-aware CLI invocation |
+| `global/CLAUDE.md` | Init/update procedures with venv creation |
+| `CHANGELOG.md` | v2.2.0 entry |
+| `README.md` | Updated installation and CLI examples |
+| `INSTALL.md` | Full venv setup instructions, migration guide |
+| `docs/architecture.md` | Updated layout and invocation patterns |
+| `docs/cortex-spec.md` | Updated CLI appendix |
+| `docs/user-guide.md` | Updated setup instructions |
+| `docs/decisions.md` | ADR-021: Virtual Environment Isolation |
+| `docs/release-notes-v2.2.0.md` | Release notes (new) |
+| `docs/session-protocol-v2.2.0.md` | Session protocol v2.2.0 (new) |
+| `agents/skills/cortex-init.md` | Updated skill procedure |
+
+### Verification
+
+- [ ] Venv creation works on Windows
+- [ ] Venv creation works on Unix
+- [ ] CLI works through venv python on both platforms
+- [ ] Status command reports venv status
+- [ ] Pre-v2.2.0 installations still work (fallback to system python)
+- [ ] Project's own venv is unaffected by Cortex dependencies
+
+---
+
+*Cortex v2.2.0 - Development completed 2026-02-10*

@@ -6,10 +6,14 @@ Override by setting environment variables.
 """
 
 import os
+import sys
 
 
 class Config:
     """Configuration with environment variable overrides."""
+
+    # Virtual environment
+    VENV_DIR = ".venv"
 
     # Embedding
     EMBEDDING_MODEL = os.getenv("CORTEX_EMBEDDING_MODEL", "intfloat/e5-small-v2")
@@ -54,3 +58,17 @@ class Config:
     def get_index_path(cls, project_root: str) -> str:
         """Get full path to index directory."""
         return os.path.join(project_root, cls.CORTEX_DIR, cls.INDEX_DIR)
+
+    @classmethod
+    def get_venv_python(cls, engine_root: str) -> str:
+        """Get path to the venv Python interpreter."""
+        venv_dir = os.path.join(engine_root, cls.VENV_DIR)
+        if sys.platform == "win32":
+            return os.path.join(venv_dir, "Scripts", "python.exe")
+        else:
+            return os.path.join(venv_dir, "bin", "python")
+
+    @classmethod
+    def has_venv(cls, engine_root: str) -> bool:
+        """Check if the Cortex venv exists."""
+        return os.path.exists(cls.get_venv_python(engine_root))

@@ -4,7 +4,7 @@
 
 Cortex is a self-contained methodology for LLM-powered software development. It provides expert agents, structured skills, artifact templates, and semantic context retrieval — everything needed to go from requirements to delivered software without external dependencies.
 
-**Version:** 2.1.0
+**Version:** 2.2.0
 
 ## Key Features
 
@@ -28,7 +28,7 @@ Cortex is a self-contained methodology for LLM-powered software development. It 
 1. **One-time:** Copy `global/CLAUDE.md` to `~/.claude/CLAUDE.md`
 2. **In any project folder:** Say "cortex init"
 
-That's it. The agent clones the repo, installs dependencies, copies files, and bootstraps everything.
+That's it. The agent clones the repo, creates an isolated venv, installs dependencies, copies files, and bootstraps everything.
 
 ### Manual Setup
 
@@ -36,18 +36,25 @@ That's it. The agent clones the repo, installs dependencies, copies files, and b
 # Clone engine into your project
 git clone https://github.com/nivanovsp/cortex.git .cortex-engine
 
-# Install dependencies
-pip install -r .cortex-engine/requirements.txt
+# Create isolated venv and install dependencies
+# Windows:
+python -m venv .cortex-engine\.venv
+.cortex-engine\.venv\Scripts\pip install -r .cortex-engine\requirements.txt
+# Unix:
+python -m venv .cortex-engine/.venv
+.cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements.txt
 
 # Copy methodology files
 cp -r .cortex-engine/agents ./agents
 cp -r .cortex-engine/.claude ./.claude
 cp .cortex-engine/CLAUDE.md ./CLAUDE.md
 
-# Initialize, bootstrap, and index
-cd .cortex-engine && python -m cli init --root ..
-cd .cortex-engine && python -m cli bootstrap --root ..
-cd .cortex-engine && python -m cli index --root ..
+# Initialize, bootstrap, and index (use venv python)
+# Windows: replace `python` with `.venv\Scripts\python`
+# Unix: replace `python` with `.venv/bin/python`
+cd .cortex-engine && .venv/bin/python -m cli init --root ..
+cd .cortex-engine && .venv/bin/python -m cli bootstrap --root ..
+cd .cortex-engine && .venv/bin/python -m cli index --root ..
 
 # Copy global rules (one-time)
 # Windows: copy .cortex-engine\global\CLAUDE.md %USERPROFILE%\.claude\CLAUDE.md
@@ -59,28 +66,32 @@ See [INSTALL.md](INSTALL.md) for full details.
 ## Quick Start
 
 ```bash
-# All CLI commands run from .cortex-engine/ with --root pointing to project
+# All CLI commands run from .cortex-engine/ using the venv python
 cd .cortex-engine
 
+# Use the venv python (replace with .venv\Scripts\python on Windows)
 # Chunk your documents
-python -m cli chunk --path docs/ --root ..
+.venv/bin/python -m cli chunk --path docs/ --root ..
 
 # Build the index
-python -m cli index --root ..
+.venv/bin/python -m cli index --root ..
 
 # Build context frame for a task
-python -m cli assemble --task "Implement user authentication" --root ..
+.venv/bin/python -m cli assemble --task "Implement user authentication" --root ..
 
-# Check status (including stale chunks)
-python -m cli status --root ..
+# Check status (including stale chunks and venv isolation)
+.venv/bin/python -m cli status --root ..
 ```
 
 ## CLI Reference
 
-All commands run from `.cortex-engine/` with `--root ..`:
+All commands run from `.cortex-engine/` using the venv python with `--root ..`:
 
 ```bash
-cd .cortex-engine && python -m cli <command> --root ..
+# Unix:
+cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
+# Windows:
+cd .cortex-engine && .venv\Scripts\python -m cli <command> --root ..
 ```
 
 ### Core Operations
@@ -271,6 +282,7 @@ VERY END               → Instructions
 ```
 your-project/
 ├── .cortex-engine/       # Cloned Cortex repo (engine)
+│   ├── .venv/            # Isolated Python venv (Cortex deps only)
 │   ├── cli/              # Python CLI
 │   ├── core/             # Python core modules
 │   └── ...               # Full Cortex repo
@@ -304,12 +316,9 @@ Environment variables (all optional, defaults work out of the box):
 ## Requirements
 
 - Python 3.8+
-- ~200MB disk space (for embedding model)
+- ~200MB disk space (for embedding model + venv)
 
-Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+Dependencies are installed into an isolated venv at `.cortex-engine/.venv/` — they do not affect your project's own Python environment.
 
 Dependencies:
 - `sentence-transformers` - Local embeddings
@@ -329,4 +338,4 @@ Dependencies:
 
 ---
 
-*Cortex v2.1.0 - Complete Software Development Methodology*
+*Cortex v2.2.0 - Complete Software Development Methodology*
