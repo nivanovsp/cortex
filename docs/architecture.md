@@ -1,6 +1,6 @@
 # Cortex Architecture
 
-**Version:** 2.2.0
+**Version:** 2.3.0
 
 ## Overview
 
@@ -31,7 +31,7 @@ Cortex is an LLM-native context management system built on the principle that LL
 │  │   CHUNKER    │    │   EMBEDDER   │    │   INDEXER    │          │
 │  │              │    │              │    │              │          │
 │  │ - Markdown   │───►│ - e5-small   │───►│ - NumPy      │          │
-│  │ - Semantic   │    │ - 384 dims   │    │ - Pickle     │          │
+│  │ - Semantic   │    │ - 384 dims   │    │ - JSON       │          │
 │  │ - 500 tokens │    │ - Local      │    │ - Brute-force│          │
 │  │ - Provenance │    │              │    │              │          │
 │  └──────────────┘    └──────────────┘    └──────────────┘          │
@@ -137,9 +137,11 @@ Builds and manages vector indices.
 **Storage:**
 ```
 .cortex/index/
-├── chunks.pkl          # NumPy array of chunk embeddings
+├── chunks.npy          # NumPy array of chunk embeddings
+├── chunks.ids.json     # Ordered list of chunk IDs
 ├── chunks.meta.json    # Chunk ID → metadata mapping
-├── memories.pkl        # Memory embeddings
+├── memories.npy        # NumPy array of memory embeddings
+├── memories.ids.json   # Ordered list of memory IDs
 └── memories.meta.json  # Memory metadata
 ```
 
@@ -231,6 +233,18 @@ Detects learnings in session text.
 | Rules | Medium | "always", "never", "must" |
 | Facts | Low | "uses", "expects" |
 
+### 8. Utilities (`core/utils.py`)
+
+Shared helper functions extracted from multiple modules to eliminate duplication (v2.3.0).
+
+**Functions:**
+| Function | Consolidated From |
+|----------|-------------------|
+| `parse_frontmatter()` | indexer, chunker, memory |
+| `parse_chunk_id()` | chunker, retriever, assembler |
+| `load_chunk_content()` | retriever, assembler |
+| `extract_keywords()` + `STOPWORDS` | chunker, memory |
+
 ## Data Flow
 
 ### Document Ingestion
@@ -309,9 +323,11 @@ Cortex tracks source file changes to ensure context is current.
 │   ├── MEM-{DATE}-{SEQ}.md               # Memory content + tracking
 │   └── MEM-{DATE}-{SEQ}.npy              # Embedding
 ├── index/
-│   ├── chunks.pkl                         # Consolidated chunk embeddings
+│   ├── chunks.npy                         # Consolidated chunk embeddings
+│   ├── chunks.ids.json                    # Ordered chunk IDs
 │   ├── chunks.meta.json                   # Chunk metadata
-│   ├── memories.pkl                       # Consolidated memory embeddings
+│   ├── memories.npy                       # Consolidated memory embeddings
+│   ├── memories.ids.json                  # Ordered memory IDs
 │   └── memories.meta.json                 # Memory metadata
 └── cache/
     └── embeddings/                        # Future: embedding cache
@@ -625,6 +641,7 @@ python -m cli index              # Rebuild indices
 ## Security Considerations
 
 - **Local Processing**: All embeddings computed locally (no data leaves machine)
+- **No Pickle Deserialization**: Index files use NumPy `.npy` and JSON — no arbitrary code execution risk (v2.3.0, replaces pickle)
 - **No Secrets**: Never chunk files containing API keys or credentials
 - **File Permissions**: `.cortex/` inherits project permissions
 
@@ -689,4 +706,4 @@ cd .cortex-engine && git pull
 
 ---
 
-*Cortex v2.2.0 - Complete Software Development Methodology*
+*Cortex v2.3.0 - Complete Software Development Methodology*

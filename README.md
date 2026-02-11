@@ -4,7 +4,7 @@
 
 Cortex is a self-contained methodology for LLM-powered software development. It provides expert agents, structured skills, artifact templates, and semantic context retrieval — everything needed to go from requirements to delivered software without external dependencies.
 
-**Version:** 2.2.0
+**Version:** 2.3.0
 
 ## Key Features
 
@@ -285,6 +285,7 @@ your-project/
 │   ├── .venv/            # Isolated Python venv (Cortex deps only)
 │   ├── cli/              # Python CLI
 │   ├── core/             # Python core modules
+│   ├── tests/            # Test suite (69 tests)
 │   └── ...               # Full Cortex repo
 ├── .cortex/              # Runtime data (created by init)
 │   ├── chunks/           # Chunked documents by domain
@@ -338,4 +339,4 @@ Dependencies:
 
 ---
 
-*Cortex v2.2.0 - Complete Software Development Methodology*
+*Cortex v2.3.0 - Complete Software Development Methodology*

@@ -15,6 +15,7 @@ import numpy as np
 
 from .config import Config
 from .embedder import embed_passage
+from .utils import parse_frontmatter, extract_keywords
 
 
 class MemoryType(str, Enum):
@@ -80,37 +81,6 @@ def get_next_memory_id(memories_path: str) -> str:
                         pass
 
     return f"MEM-{today}-{seq:03d}"
-
-
-def extract_keywords(text: str, max_keywords: int = 10) -> list[str]:
-    """Extract keywords from text."""
-    import re
-
-    text_lower = text.lower()
-    # Remove markdown syntax
-    text_clean = re.sub(r'```[\s\S]*?```', '', text_lower)
-    text_clean = re.sub(r'`[^`]+`', '', text_clean)
-    text_clean = re.sub(r'[#*_~`>\-|]', ' ', text_clean)
-
-    # Tokenize
-    words = re.findall(r'\b[a-z]{3,}\b', text_clean)
-
-    # Filter stopwords
-    stopwords = {
-        'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had',
-        'her', 'was', 'one', 'our', 'out', 'has', 'have', 'been', 'were',
-        'being', 'their', 'there', 'this', 'that', 'with', 'they', 'from',
-        'will', 'would', 'could', 'should', 'which', 'when', 'where', 'what'
-    }
-    words = [w for w in words if w not in stopwords]
-
-    # Count frequency
-    freq = {}
-    for word in words:
-        freq[word] = freq.get(word, 0) + 1
-
-    sorted_words = sorted(freq.items(), key=lambda x: x[1], reverse=True)
-    return [word for word, _ in sorted_words[:max_keywords]]
 
 
 def create_memory(
@@ -234,38 +204,8 @@ def parse_memory_file(md_path: str) -> Optional[Memory]:
     if end_idx == -1:
         return None
 
-    frontmatter = content[3:end_idx].strip()
     body = content[end_idx + 3:].strip()
-
-    # Parse YAML-like frontmatter
-    meta = {}
-    for line in frontmatter.split('\n'):
-        if ':' in line:
-            key, value = line.split(':', 1)
-            key = key.strip()
-            value = value.strip()
-
-            # Parse value types
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-            elif value.startswith('[') and value.endswith(']'):
-                try:
-                    value = json.loads(value)
-                except json.JSONDecodeError:
-                    pass
-            elif value == 'null':
-                value = None
-            elif value == 'true':
-                value = True
-            elif value == 'false':
-                value = False
-            elif value.replace('.', '').replace('-', '').isdigit():
-                try:
-                    value = float(value) if '.' in value else int(value)
-                except ValueError:
-                    pass
-
-            meta[key] = value
+    meta = parse_frontmatter(content)
 
     # Parse body sections
     learning = ""

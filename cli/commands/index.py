@@ -22,15 +22,15 @@ def run(project_root: Optional[Path] = None):
 
     # Build chunks index
     try:
-        chunks_stats = build_index(str(root), "chunks")
-        typer.echo(f"  chunks: {chunks_stats['count']} vectors indexed")
+        count, path = build_index(str(root), "chunks")
+        typer.echo(f"  chunks: {count} vectors indexed")
     except Exception as e:
         typer.echo(f"  chunks: skipped ({e})")
 
     # Build memories index
     try:
-        memories_stats = build_index(str(root), "memories")
-        typer.echo(f"  memories: {memories_stats['count']} vectors indexed")
+        count, path = build_index(str(root), "memories")
+        typer.echo(f"  memories: {count} vectors indexed")
     except Exception as e:
         typer.echo(f"  memories: skipped ({e})")
 

@@ -6,53 +6,12 @@ Build and manage vector indices for chunks and memories.
 
 import os
 import json
-import pickle
 from pathlib import Path
 from typing import Optional
 import numpy as np
 
 from .config import Config
-
-
-def parse_frontmatter(content: str) -> dict:
-    """Parse YAML frontmatter from markdown file."""
-    if not content.startswith('---'):
-        return {}
-
-    # Find end of frontmatter
-    end_idx = content.find('---', 3)
-    if end_idx == -1:
-        return {}
-
-    frontmatter = content[3:end_idx].strip()
-    result = {}
-
-    for line in frontmatter.split('\n'):
-        if ':' in line:
-            key, value = line.split(':', 1)
-            key = key.strip()
-            value = value.strip()
-
-            # Parse value types
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-            elif value.startswith('[') and value.endswith(']'):
-                try:
-                    value = json.loads(value)
-                except json.JSONDecodeError:
-                    pass
-            elif value == 'null':
-                value = None
-            elif value == 'true':
-                value = True
-            elif value == 'false':
-                value = False
-            elif value.isdigit():
-                value = int(value)
-
-            result[key] = value
-
-    return result
+from .utils import parse_frontmatter
 
 
 def scan_chunks(chunks_path: str) -> list[dict]:
@@ -189,13 +148,14 @@ def build_index(
     index_path = Config.get_index_path(project_root)
     os.makedirs(index_path, exist_ok=True)
 
-    # Save embeddings as pickle (numpy array)
-    pkl_path = os.path.join(index_path, f"{index_type}.pkl")
-    with open(pkl_path, 'wb') as f:
-        pickle.dump({
-            'embeddings': embeddings_array,
-            'ids': [item['id'] for item in items]
-        }, f)
+    # Save embeddings as numpy array
+    npy_path = os.path.join(index_path, f"{index_type}.npy")
+    np.save(npy_path, embeddings_array)
+
+    # Save IDs as JSON
+    ids_path = os.path.join(index_path, f"{index_type}.ids.json")
+    with open(ids_path, 'w', encoding='utf-8') as f:
+        json.dump([item['id'] for item in items], f, indent=2)
 
     # Save metadata as JSON
     meta_path = os.path.join(index_path, f"{index_type}.meta.json")
@@ -205,10 +165,10 @@ def build_index(
     print(f"Built {index_type} index:")
     print(f"  Items: {len(items)}")
     print(f"  Shape: {embeddings_array.shape}")
-    print(f"  Index: {pkl_path}")
+    print(f"  Index: {npy_path}")
     print(f"  Meta:  {meta_path}")
 
-    return len(items), pkl_path
+    return len(items), npy_path
 
 
 def load_index(
@@ -228,18 +188,21 @@ def load_index(
     project_root = os.path.abspath(project_root)
     index_path = Config.get_index_path(project_root)
 
-    pkl_path = os.path.join(index_path, f"{index_type}.pkl")
+    npy_path = os.path.join(index_path, f"{index_type}.npy")
+    ids_path = os.path.join(index_path, f"{index_type}.ids.json")
     meta_path = os.path.join(index_path, f"{index_type}.meta.json")
 
-    if not os.path.exists(pkl_path):
-        raise FileNotFoundError(f"Index not found: {pkl_path}")
+    if not os.path.exists(npy_path):
+        raise FileNotFoundError(f"Index not found: {npy_path}")
 
     # Load embeddings
-    with open(pkl_path, 'rb') as f:
-        data = pickle.load(f)
+    embeddings = np.load(npy_path)
 
-    embeddings = data['embeddings']
-    ids = data['ids']
+    # Load IDs
+    ids = []
+    if os.path.exists(ids_path):
+        with open(ids_path, 'r', encoding='utf-8') as f:
+            ids = json.load(f)
 
     # Load metadata
     metadata = {}
@@ -258,14 +221,18 @@ def get_index_stats(project_root: str = ".") -> dict:
     stats = {}
 
     for index_type in ["chunks", "memories"]:
-        pkl_path = os.path.join(index_path, f"{index_type}.pkl")
-        if os.path.exists(pkl_path):
-            with open(pkl_path, 'rb') as f:
-                data = pickle.load(f)
+        npy_path = os.path.join(index_path, f"{index_type}.npy")
+        ids_path = os.path.join(index_path, f"{index_type}.ids.json")
+        if os.path.exists(npy_path):
+            embeddings = np.load(npy_path)
+            ids = []
+            if os.path.exists(ids_path):
+                with open(ids_path, 'r', encoding='utf-8') as f:
+                    ids = json.load(f)
             stats[index_type] = {
-                'count': len(data['ids']),
-                'shape': data['embeddings'].shape,
-                'size_bytes': os.path.getsize(pkl_path)
+                'count': len(ids),
+                'shape': embeddings.shape,
+                'size_bytes': os.path.getsize(npy_path)
             }
 
     return stats

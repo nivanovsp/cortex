@@ -10,7 +10,7 @@ import typer
 def run(
     query: str,
     top_k: int = 5,
-    index_type: str = "chunks",
+    index_type: str = "both",
     project_root: Optional[Path] = None
 ):
     """Search for relevant context."""

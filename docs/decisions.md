@@ -879,3 +879,134 @@ cd .cortex-engine && .venv/bin/python -m cli <command> --root ..
 - Platform-specific paths require documenting both Windows and Unix variants
 - Additional disk space for the venv (~50MB minimum, more with PyTorch for sentence-transformers)
 - Pre-v2.2.0 installations need migration (create the venv manually)
+
+---
+
+## ADR-022: Shared Utility Module
+
+**Date:** 2026-02-11
+**Status:** Accepted
+**Version:** 2.3.0
+
+### Context
+
+Several functions were duplicated across core modules:
+
+| Function | Duplicated In |
+|----------|---------------|
+| `parse_frontmatter()` | indexer, chunker, memory |
+| `parse_chunk_id()` | chunker, retriever, assembler |
+| `load_chunk_content()` | retriever, assembler |
+| `extract_keywords()` + stopwords | chunker (49 words), memory (38 words) |
+
+The duplicated implementations had diverged — for example, the chunker and memory modules maintained different stopword lists.
+
+### Decision
+
+Create `core/utils.py` as a shared utility module containing these functions. All modules now import from `utils` instead of maintaining their own copies.
+
+### Rationale
+
+- **DRY principle** — Four separate `parse_frontmatter()` implementations is a maintenance burden
+- **Divergent stopwords** — Two different keyword extraction functions with different word lists produced inconsistent results
+- **Low risk** — Pure functions with no side effects are safe to consolidate
+- **Single module** — One `utils.py` file rather than scattered helpers avoids over-abstraction
+
+### Consequences
+
+**Positive:**
+- Single source of truth for shared functions
+- Unified stopword list (superset of both originals)
+- Consistent keyword extraction across all modules
+
+**Negative:**
+- New import dependency for several modules
+- `utils.py` could grow into a catch-all if not managed
+
+---
+
+## ADR-023: Test Strategy
+
+**Date:** 2026-02-11
+**Status:** Accepted
+**Version:** 2.3.0
+
+### Context
+
+Cortex had no automated tests. Verification was manual — run a command, check the output. This made refactoring risky and regressions hard to detect.
+
+### Decision
+
+Add a focused test suite with three layers:
+
+1. **Pure function unit tests** (49 tests) — Test functions with no I/O: parsing, keyword extraction, scoring, formatting
+2. **Interface tests** (15 tests) — Test module APIs with mocked dependencies: verify function signatures, return types, error handling
+3. **I/O round-trip tests** (5 tests) — Test actual file read/write: chunk creation, index build/load, memory persistence
+
+### Rationale
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| No tests | Zero effort | Regressions undetected |
+| Full integration tests | High confidence | Slow, brittle, complex setup |
+| **Layered (chosen)** | Fast, focused, maintainable | Some gaps at integration boundaries |
+
+The layered approach prioritizes pure function tests (fast, no setup) while covering key I/O paths with targeted round-trip tests.
+
+### Consequences
+
+**Positive:**
+- 69 tests run in seconds
+- Refactoring is safer — regressions caught immediately
+- `requirements-dev.txt` keeps test deps separate from runtime deps
+
+**Negative:**
+- Tests need maintenance as code evolves
+- Integration boundaries between modules have less coverage
+
+---
+
+## ADR-024: Replace Pickle with NumPy/JSON for Index Storage
+
+**Date:** 2026-02-11
+**Status:** Accepted (amends ADR-002)
+**Version:** 2.3.0
+
+### Context
+
+ADR-002 chose NumPy brute-force with pickle serialization for the vector index. While functional, `pickle.load()` can execute arbitrary code during deserialization. If a malicious `.pkl` file is placed in `.cortex/index/`, it would be executed when the index is loaded.
+
+### Decision
+
+Replace pickle with:
+- **NumPy `.npy`** files for embedding arrays (`np.save` / `np.load`)
+- **JSON `.ids.json`** files for ID lists
+
+### Rationale
+
+| Format | Arbitrary Code Execution | Speed | Complexity |
+|--------|--------------------------|-------|------------|
+| Pickle | Yes | Fast | Simple |
+| **NumPy + JSON** | No | Fast | Simple |
+| SQLite | No | Medium | More complex |
+| HDF5 | No | Fast | Extra dependency |
+
+NumPy's `.npy` format is the natural choice — it's already a dependency, handles arrays natively, and introduces no security risk. JSON for IDs is similarly safe and human-readable.
+
+### Migration
+
+Existing `.pkl` files are not loaded by v2.3.0. Users must rebuild indices:
+```bash
+cd .cortex-engine && .venv/Scripts/python -m cli index --root ..
+```
+
+### Consequences
+
+**Positive:**
+- No arbitrary code execution risk from index files
+- Index files are inspectable (JSON is human-readable, `.npy` is NumPy-standard)
+- No new dependencies
+
+**Negative:**
+- Breaking change — existing `.pkl` indices must be rebuilt
+- Two files per index type instead of one (`.npy` + `.ids.json` instead of single `.pkl`)

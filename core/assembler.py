@@ -15,6 +15,7 @@ import tiktoken
 from .config import Config
 from .retriever import retrieve
 from .memory import increment_retrieval
+from .utils import load_chunk_content
 
 
 @dataclass
@@ -156,32 +157,6 @@ def truncate_to_budget(text: str, max_tokens: int) -> str:
     # Truncate and add ellipsis
     truncated = encoder.decode(tokens[:max_tokens - 3])
     return truncated + "..."
-
-
-def load_chunk_content(chunk_id: str, project_root: str) -> Optional[str]:
-    """Load full content for a chunk."""
-    # Parse domain from chunk ID (CHK-DOMAIN-DOC-SEQ)
-    parts = chunk_id.split('-')
-    if len(parts) < 2:
-        return None
-
-    domain = parts[1]
-    chunks_path = Config.get_chunks_path(project_root)
-    md_path = os.path.join(chunks_path, domain, f"{chunk_id}.md")
-
-    if not os.path.exists(md_path):
-        return None
-
-    with open(md_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    # Extract content after frontmatter
-    if '---' in content:
-        parts = content.split('---', 2)
-        if len(parts) >= 3:
-            return parts[2].strip()
-
-    return content
 
 
 def load_memory_content(memory_id: str, project_root: str) -> Optional[str]:

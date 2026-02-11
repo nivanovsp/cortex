@@ -14,6 +14,7 @@ import numpy as np
 from .config import Config
 from .embedder import embed_query
 from .indexer import load_index
+from .utils import parse_chunk_id, load_chunk_content
 
 
 @dataclass
@@ -224,23 +225,8 @@ def _search_index(
 
 def _load_content(chunk_id: str, project_root: str, index_type: str) -> Optional[str]:
     """Load content from chunk/memory file."""
-    cortex_path = Config.get_cortex_path(project_root)
-
     if index_type == "chunks":
-        # Parse domain from chunk ID (CHK-DOMAIN-DOC-SEQ)
-        parts = chunk_id.split('-')
-        if len(parts) >= 2:
-            domain = parts[1]
-            md_path = os.path.join(cortex_path, Config.CHUNKS_DIR, domain, f"{chunk_id}.md")
-            if os.path.exists(md_path):
-                with open(md_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                # Extract content after frontmatter
-                if '---' in content:
-                    parts = content.split('---', 2)
-                    if len(parts) >= 3:
-                        return parts[2].strip()
-                return content
+        return load_chunk_content(chunk_id, project_root)
     return None
 
 

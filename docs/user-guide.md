@@ -2,7 +2,7 @@
 
 A comprehensive guide to using Cortex for LLM-native context management.
 
-**Version:** 2.2.0
+**Version:** 2.3.0
 
 ## Table of Contents
 
@@ -541,6 +541,38 @@ python -m cli extract --text "..." --auto-save
 
 ---
 
+## Running Tests
+
+**(New in v2.3.0)** Cortex includes a test suite with 69 tests covering core functionality.
+
+### Install Dev Dependencies
+
+```bash
+# Windows:
+.cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements-dev.txt
+# Unix:
+.cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements-dev.txt
+```
+
+### Run Tests
+
+```bash
+# Windows:
+cd .cortex-engine && .venv/Scripts/python -m pytest
+# Unix:
+cd .cortex-engine && .venv/bin/python -m pytest
+```
+
+### Test Layers
+
+| Layer | Count | What It Tests |
+|-------|-------|---------------|
+| Pure functions | 49 | Parsing, keyword extraction, scoring — no I/O |
+| Interfaces | 15 | Module APIs, return types, error handling |
+| I/O round-trips | 5 | File read/write for chunks, indices, memories |
+
+---
+
 ## Best Practices
 
 ### Document Organization
@@ -630,6 +662,16 @@ rm -rf .cortex/index/*
 
 # Rebuild
 python -m cli index
+```
+
+**Upgrading from v2.2.0 — "Index not found" after update**
+
+The index format changed from pickle (`.pkl`) to NumPy/JSON (`.npy` + `.ids.json`). Rebuild:
+```bash
+# Windows:
+cd .cortex-engine && .venv/Scripts/python -m cli index --root ..
+# Unix:
+cd .cortex-engine && .venv/bin/python -m cli index --root ..
 ```
 
 ### Getting Help

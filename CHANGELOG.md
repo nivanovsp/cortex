@@ -5,6 +5,39 @@ All notable changes to Cortex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-02-11
+
+### Fixed
+
+- **Index CLI crash** — `cli/commands/index.py` treated `build_index()` return tuple as dict, causing `TypeError` on every index build
+- **Extractor duplicate sentence bug** — `core/extractor.py` used `list.index()` for context windowing, which matched the first occurrence of duplicate sentences instead of the correct one. Now uses `enumerate()` for positional accuracy
+- **Retrieve CLI default mismatch** — `cli/commands/retrieve.py` default `index_type` was `"chunks"` but core `retrieve()` defaulted to `"both"`. CLI now defaults to `"both"` to match
+
+### Changed
+
+- **Index storage format** — Replaced pickle (`.pkl`) with NumPy (`.npy`) + JSON (`.ids.json`) for index serialization. Removes arbitrary code execution risk from pickle deserialization. Existing `.pkl` indices must be rebuilt
+- **Shared utility module** — Created `core/utils.py` with functions previously duplicated across modules:
+  - `parse_frontmatter()` — consolidated from indexer, chunker, and memory
+  - `parse_chunk_id()` — centralized from chunker, retriever, and assembler
+  - `load_chunk_content()` — consolidated from retriever and assembler
+  - `extract_keywords()` + `STOPWORDS` — merged from chunker (49 words) and memory (38 words) into a unified set
+- **Removed unused `overlap` parameter** from `split_by_paragraphs()` in chunker
+
+### Added
+
+- **Test suite** — 69 focused tests (49 pure function unit tests, 15 interface tests, 5 I/O round-trips) in `tests/`
+- **`requirements-dev.txt`** — Development dependencies (`pytest`, `pytest-cov`)
+- **`pytest.ini`** — Test configuration
+- **ADR-022** — Shared Utility Module decision record
+- **ADR-023** — Test Strategy decision record
+- **ADR-024** — Replace Pickle with NumPy/JSON (amends ADR-002)
+
+### Removed
+
+- **Pickle dependency** — `import pickle` removed from `core/indexer.py`
+
+---
+
 ## [2.2.0] - 2026-02-10
 
 ### Added

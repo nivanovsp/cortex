@@ -194,12 +194,11 @@ def extract_memories(
             match_pos = match.start()
             context_sentences = []
             char_count = 0
-            for sent in sentences:
+            for idx, sent in enumerate(sentences):
                 sent_start = text.find(sent, char_count)
                 sent_end = sent_start + len(sent)
                 if sent_start <= match_pos <= sent_end:
                     # Include previous sentence if available
-                    idx = sentences.index(sent)
                     if idx > 0:
                         context_sentences.append(sentences[idx - 1])
                     context_sentences.append(sent)

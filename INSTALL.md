@@ -1,6 +1,6 @@
 # Cortex Installation Guide
 
-**Version:** 2.2.0
+**Version:** 2.3.0
 
 ## Prerequisites
 
@@ -257,6 +257,24 @@ cd .cortex-engine && .venv/bin/python -m cli index --root ..
 
 Cortex uses its own isolated venv at `.cortex-engine/.venv/`. If you see import errors, ensure you're using the venv python path, not your project's python.
 
+## Running Tests
+
+To run the Cortex test suite, install development dependencies and use pytest:
+
+**Windows:**
+```bash
+.cortex-engine/.venv/Scripts/pip install -r .cortex-engine/requirements-dev.txt
+cd .cortex-engine && .venv/Scripts/python -m pytest
+```
+
+**Unix:**
+```bash
+.cortex-engine/.venv/bin/pip install -r .cortex-engine/requirements-dev.txt
+cd .cortex-engine && .venv/bin/python -m pytest
+```
+
+The test suite includes 69 tests covering pure functions, module interfaces, and file I/O operations.
+
 ## Uninstalling
 
 ```bash
@@ -280,6 +298,16 @@ If upgrading from v2.0.0:
 5. Rebuild index: `cd .cortex-engine && python -m cli index --root ..`
 6. Update `~/.claude/CLAUDE.md` from `global/CLAUDE.md`
 7. Add `.cortex-engine/` to `.gitignore`
+
+### Migrating from v2.2.x
+
+The index storage format changed from pickle (`.pkl`) to NumPy/JSON (`.npy` + `.ids.json`). After updating:
+
+1. Rebuild indices:
+   - Windows: `cd .cortex-engine && .venv/Scripts/python -m cli index --root ..`
+   - Unix: `cd .cortex-engine && .venv/bin/python -m cli index --root ..`
+
+Old `.pkl` files in `.cortex/index/` can be deleted after rebuilding.
 
 ### Migrating from v2.1.x
 

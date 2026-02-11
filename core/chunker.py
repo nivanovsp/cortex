@@ -16,6 +16,7 @@ import numpy as np
 
 from .config import Config
 from .embedder import embed_passage
+from .utils import parse_frontmatter, parse_chunk_id, extract_keywords
 
 
 @dataclass
@@ -38,44 +39,6 @@ def count_tokens(text: str) -> int:
     import tiktoken
     encoder = tiktoken.get_encoding("cl100k_base")
     return len(encoder.encode(text))
-
-
-def extract_keywords(text: str, max_keywords: int = 10) -> list[str]:
-    """
-    Extract keywords from text using simple TF-based approach.
-
-    For Phase 1, uses word frequency. Can be upgraded to TF-IDF later.
-    """
-    # Clean and tokenize
-    text_lower = text.lower()
-    # Remove markdown syntax, code blocks, etc.
-    text_clean = re.sub(r'```[\s\S]*?```', '', text_lower)
-    text_clean = re.sub(r'`[^`]+`', '', text_clean)
-    text_clean = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text_clean)
-    text_clean = re.sub(r'[#*_~`>\-|]', ' ', text_clean)
-
-    # Tokenize
-    words = re.findall(r'\b[a-z]{3,}\b', text_clean)
-
-    # Filter stopwords
-    stopwords = {
-        'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had',
-        'her', 'was', 'one', 'our', 'out', 'has', 'have', 'been', 'were',
-        'being', 'their', 'there', 'this', 'that', 'with', 'they', 'from',
-        'will', 'would', 'could', 'should', 'which', 'when', 'where', 'what',
-        'each', 'into', 'than', 'then', 'also', 'only', 'other', 'such',
-        'more', 'some', 'very', 'just', 'about', 'over', 'after', 'before'
-    }
-    words = [w for w in words if w not in stopwords]
-
-    # Count frequency
-    freq = {}
-    for word in words:
-        freq[word] = freq.get(word, 0) + 1
-
-    # Sort by frequency and return top keywords
-    sorted_words = sorted(freq.items(), key=lambda x: x[1], reverse=True)
-    return [word for word, _ in sorted_words[:max_keywords]]
 
 
 def detect_domain(path: str) -> str:
@@ -115,11 +78,10 @@ def get_next_doc_number(chunks_path: str, domain: str) -> int:
     existing = set()
     for f in os.listdir(domain_path):
         if f.endswith('.md'):
-            # Parse CHK-DOMAIN-DOC-SEQ.md
-            parts = f.replace('.md', '').split('-')
-            if len(parts) >= 4:
+            parsed = parse_chunk_id(f.replace('.md', ''))
+            if parsed:
                 try:
-                    existing.add(int(parts[2]))
+                    existing.add(int(parsed[2]))
                 except ValueError:
                     pass
 
@@ -173,7 +135,7 @@ def parse_sections(content: str) -> list[dict]:
     return sections
 
 
-def split_by_paragraphs(text: str, max_tokens: int, overlap: int) -> list[str]:
+def split_by_paragraphs(text: str, max_tokens: int) -> list[str]:
     """
     Split text into chunks by paragraphs.
 
@@ -333,8 +295,7 @@ def chunk_document(
             # Split by paragraphs
             text_chunks = split_by_paragraphs(
                 section_content,
-                Config.CHUNK_SIZE,
-                Config.CHUNK_OVERLAP
+                Config.CHUNK_SIZE
             )
 
         # Add overlap between chunks
@@ -450,30 +411,7 @@ def parse_chunk_metadata(chunk_path: str) -> dict:
     """Parse metadata from a chunk's markdown frontmatter."""
     with open(chunk_path, 'r', encoding='utf-8') as f:
         content = f.read()
-
-    if not content.startswith('---'):
-        return {}
-
-    end_idx = content.find('---', 3)
-    if end_idx == -1:
-        return {}
-
-    frontmatter = content[3:end_idx].strip()
-    meta = {}
-
-    for line in frontmatter.split('\n'):
-        if ':' in line:
-            key, value = line.split(':', 1)
-            key = key.strip()
-            value = value.strip()
-
-            # Parse quoted strings
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1]
-
-            meta[key] = value
-
-    return meta
+    return parse_frontmatter(content)
 
 
 def get_stale_chunks(project_root: str = ".") -> list[dict]:
@@ -586,12 +524,11 @@ def delete_chunks(chunk_ids: list[str], project_root: str = ".") -> int:
     deleted = 0
 
     for chunk_id in chunk_ids:
-        # Parse domain from chunk ID (CHK-DOMAIN-DOC-SEQ)
-        parts = chunk_id.split('-')
-        if len(parts) < 2:
+        parsed = parse_chunk_id(chunk_id)
+        if not parsed:
             continue
 
-        domain = parts[1]
+        domain = parsed[1]
         domain_path = os.path.join(chunks_path, domain)
 
         md_path = os.path.join(domain_path, f"{chunk_id}.md")

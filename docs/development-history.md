@@ -625,13 +625,92 @@ When Cortex's `typer` dependency wasn't available in the active environment, the
 
 ### Verification
 
-- [ ] Venv creation works on Windows
-- [ ] Venv creation works on Unix
-- [ ] CLI works through venv python on both platforms
-- [ ] Status command reports venv status
-- [ ] Pre-v2.2.0 installations still work (fallback to system python)
-- [ ] Project's own venv is unaffected by Cortex dependencies
+- [x] Venv creation works on Windows
+- [x] Venv creation works on Unix
+- [x] CLI works through venv python on both platforms
+- [x] Status command reports venv status
+- [x] Pre-v2.2.0 installations still work (fallback to system python)
+- [x] Project's own venv is unaffected by Cortex dependencies
 
 ---
 
 *Cortex v2.2.0 - Development completed 2026-02-10*
+
+---
+
+## v2.3.0 - Bug Fixes, Security, and Test Coverage
+
+**Date:** 2026-02-11
+**Objective:** Fix known bugs, replace pickle serialization, reduce code duplication, and add automated tests
+
+### Background
+
+A team review of the v2.2.0 codebase identified 10 issues ranging from a CLI crash (index command treating a tuple as a dict) to duplicated utility functions across modules. The review also flagged pickle deserialization as a security concern and the complete absence of automated tests.
+
+### Team Review Process
+
+The v2.3.0 release used a structured team approach:
+- **fixer-alpha** — Bug fixes (FIX-001, FIX-003, FIX-009, FIX-010)
+- **fixer-beta** — Refactoring and security (FIX-002, FIX-004, FIX-005, FIX-006, FIX-007, FIX-008)
+- **test-writer** — Test suite creation (FIX-005)
+- **doc-writer** — Documentation updates (DOC-001 through DOC-010)
+
+### Fixes
+
+| ID | Severity | Description |
+|----|----------|-------------|
+| FIX-001 | HIGH | `cli/commands/index.py` — `build_index()` return tuple treated as dict, causing TypeError crash |
+| FIX-002 | HIGH | `core/indexer.py` — Replaced pickle with NumPy `.npy` + JSON `.ids.json` (security) |
+| FIX-003 | MEDIUM | `core/extractor.py` — `sentences.index(sent)` matched wrong duplicate; now uses `enumerate()` |
+| FIX-004 | MEDIUM | Created `core/utils.py` with shared `parse_frontmatter()` |
+| FIX-005 | MEDIUM | Added 69 tests: 49 pure function, 15 interface, 5 I/O round-trip |
+| FIX-006 | LOW | Added `load_chunk_content()` to `core/utils.py` |
+| FIX-007 | LOW | Merged divergent `extract_keywords()` + stopwords into `core/utils.py` |
+| FIX-008 | LOW | Added `parse_chunk_id()` to `core/utils.py` |
+| FIX-009 | LOW | Removed unused `overlap` parameter from `split_by_paragraphs()` |
+| FIX-010 | LOW | Aligned `retrieve` CLI default `index_type` to `"both"` to match core |
+
+### Deliverables
+
+#### New Files
+```
+core/utils.py              # Shared utility functions
+tests/__init__.py           # Test package
+tests/conftest.py           # Shared fixtures
+tests/test_pure_functions.py  # 49 pure function tests
+tests/test_interfaces.py    # 15 interface tests
+tests/test_file_io.py       # 5 I/O round-trip tests
+requirements-dev.txt        # Dev dependencies (pytest, pytest-cov)
+pytest.ini                  # Test configuration
+```
+
+#### Modified Files
+```
+core/indexer.py             # NumPy/JSON instead of pickle
+core/extractor.py           # enumerate() for duplicate sentences
+core/chunker.py             # Uses utils.py, removed unused param
+core/memory.py              # Uses utils.py
+core/retriever.py           # Uses utils.py
+core/assembler.py           # Uses utils.py
+cli/commands/index.py       # Fixed return type handling
+cli/commands/retrieve.py    # Default index_type aligned to "both"
+```
+
+#### Documentation
+- Updated: CHANGELOG, INSTALL, README, architecture, cortex-spec, decisions, user-guide, development-history
+- New ADRs: ADR-022 (Shared Utility Module), ADR-023 (Test Strategy), ADR-024 (Replace Pickle)
+- New: release-notes-v2.3.0.md, session-protocol-v2.3.0.md
+
+### Verification
+
+- [x] 69 tests pass
+- [x] Index build/load works with new NumPy/JSON format
+- [x] Extractor handles duplicate sentences correctly
+- [x] CLI index command no longer crashes
+- [x] Retrieve CLI defaults match core defaults
+- [x] All modules use shared utils instead of duplicated code
+- [x] No pickle imports remain in codebase
+
+---
+
+*Cortex v2.3.0 - Development completed 2026-02-11*

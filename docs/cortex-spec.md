@@ -1,7 +1,7 @@
 # Cortex: LLM-Native Context Management
 
 **Status**: Specification
-**Version**: 2.2.0
+**Version**: 2.3.0
 **Date**: 2026-02-01
 **Author**: Claude (Architect Mode)
 
@@ -412,20 +412,23 @@ python -m venv .venv
 
 ### 4.3 Vector Index
 
-**Technology: NumPy + Pickle (Brute-Force)**
+**Technology: NumPy + JSON (Brute-Force)**
 
 At <500 chunks, brute-force cosine similarity is:
 - Fast: <1ms for 500 vectors
 - Simple: No index corruption, just load and search
 - Zero dependencies: NumPy only
+- Safe: No pickle deserialization (v2.3.0)
 
 **Structure:**
 ```
 .cortex/index/
-├── chunks.pkl          # Numpy array of embeddings
+├── chunks.npy          # NumPy array of embeddings
+├── chunks.ids.json     # Ordered list of chunk IDs
 ├── chunks.meta.json    # ID → metadata mapping
-├── memories.pkl
-└── memories.meta.json
+├── memories.npy        # NumPy array of memory embeddings
+├── memories.ids.json   # Ordered list of memory IDs
+└── memories.meta.json  # Memory metadata
 ```
 
 ### 4.4 Retrieval
@@ -525,7 +528,7 @@ All technical decisions have been made:
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Embedding Model | `e5-small-v2` | Free, local, designed for retrieval |
-| Vector Index | NumPy + pickle | Simple, fast enough at <500 chunks |
+| Vector Index | NumPy + JSON | Simple, fast enough at <500 chunks, no pickle risk |
 | Chunk Size | 500 tokens | Matches model max, balanced granularity |
 | Memory Extraction | Hybrid | Auto-save high confidence, propose others |
 | Storage Format | Markdown + frontmatter | LLM-friendly (2-5% vs 8-12% YAML) |
@@ -679,9 +682,11 @@ Leaves **90%+ context** for actual work.
 │   ├── MEM-2026-01-20-001.npy      # Embedding (NumPy binary)
 │   └── ...
 ├── index/
-│   ├── chunks.pkl                   # Consolidated chunk embeddings
+│   ├── chunks.npy                   # Consolidated chunk embeddings
+│   ├── chunks.ids.json              # Ordered chunk IDs
 │   ├── chunks.meta.json             # Chunk ID → metadata mapping
-│   ├── memories.pkl                 # Consolidated memory embeddings
+│   ├── memories.npy                 # Consolidated memory embeddings
+│   ├── memories.ids.json            # Ordered memory IDs
 │   └── memories.meta.json           # Memory metadata
 └── cache/
     └── embeddings/                  # Future: embedding cache
@@ -904,4 +909,4 @@ All agents support:
 
 ---
 
-*Cortex v2.2.0 - Complete Software Development Methodology*
+*Cortex v2.3.0 - Complete Software Development Methodology*
